@@ -9,7 +9,7 @@ import { join } from "path";
  */
 
 
-enum ModelGenerationInputStableSamplers {
+export enum ModelGenerationInputStableSamplers {
     "k_lms" = "k_lms",
     "k_heun" = "k_heun",
     "k_euler" = "k_euler",
@@ -24,19 +24,19 @@ enum ModelGenerationInputStableSamplers {
     "dpmsolver" = "dpmsolver"
 } 
 
-enum SourceImageProcessingTypes {
+export enum SourceImageProcessingTypes {
     "img2img" = "img2img",
     "inpainting" = "inpainting",
     "outpainting" = "outpainting"
 } 
 
-enum ModelGenerationInputPostProcessingTypes {
+export enum ModelGenerationInputPostProcessingTypes {
     "GFPGAN" = "GFPGAN",
     "RealESRGAN_x4plus" = "RealESRGAN_x4plus",
     "CodeFormers" = "CodeFormers"
 }
 
-enum ModelInterrogationFormTypes {
+export enum ModelInterrogationFormTypes {
     "caption" = "caption",
     "interrogation" = "interrogation",
     "nsfw" = "nsfw",
@@ -49,7 +49,7 @@ enum ModelInterrogationFormTypes {
     "strip_background" = "strip_background"
 }
 
-enum HordeAsyncRequestStates {
+export enum HordeAsyncRequestStates {
     "waiting" = "waiting",
     "processing" = "processing",
     "done" = "done",
@@ -58,7 +58,7 @@ enum HordeAsyncRequestStates {
     "cancelled" = "cancelled"
 }
 
-enum ModelGenerationInputControlTypes {
+export enum ModelGenerationInputControlTypes {
     "canny" = "canny",
     "hed" = "hed",
     "depth" = "depth",

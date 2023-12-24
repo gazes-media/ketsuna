@@ -1,11 +1,12 @@
-import { Express } from "express";
+import { FastifyInstance } from "fastify";
 import os from "os";
 import * as routes from "./routes";
 class Website {
-    constructor(private app: Express) { }
+    constructor(private app: FastifyInstance) { }
 
     public init() {
-        this.app.get("/", (req, res) => {
+        this.loadRoutes();
+        this.app.get("/api", (req, res) => {
             let perfs = process.memoryUsage();
             const formatMemoryUsage = (data: number) => `${Math.round(data / 1024 / 1024 * 100) / 100} MB`;
             const osPerfs = {
@@ -14,7 +15,10 @@ class Website {
                 usedMem: formatMemoryUsage(os.totalmem() - os.freemem()),
                 cpus: os.cpus()
             };
-            res.json({
+            res
+            .code(200)
+            .header('Content-Type', 'application/json; charset=utf-8')
+            .send({
                 status: "ok",
                 currentProcess: {
                     rss: formatMemoryUsage(perfs.rss),
@@ -23,17 +27,12 @@ class Website {
                     external: formatMemoryUsage(perfs.external),
                     arrayBuffers: perfs.arrayBuffers
                 },
-                osPerfs: {
-                    totalMem: formatMemoryUsage(perfs.rss),
-                    freeMem: formatMemoryUsage(perfs.heapTotal),
-                    usedMem: formatMemoryUsage(perfs.heapUsed),
-                    cpus: osPerfs
-                }
+                osPerfs: osPerfs
             });
         });
 
-        this.app.get("/ping", (req, res) => {
-            res.json({ status: "ok" });
+        this.app.get("/api/ping", (req, res) => {
+            res.status(200).header('Content-Type', 'application/json; charset=utf-8').send({ status: "ok" });
         });
         this.app.listen(process.env.PORT || 3000, () => console.log(`Listening on port localhost:${process.env.PORT || 3000}`));
     }
