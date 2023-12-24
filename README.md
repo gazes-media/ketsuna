@@ -1,6 +1,6 @@
-# Back-end
+# Ketsuna (Back/Front)
 
-This is the full back-end of Ketsuna. It is a REST API built with [Node.js](https://nodejs.org/en/) and [Fastify](https://www.fastify.io/). It also contains a [Discord bot](https://discord.com/developers/docs/intro) that is used to communicate with the Discord API.
+This is the full back-end and front-end of Ketsuna. It is a REST API built with [Node.js](https://nodejs.org/en/) and [Fastify](https://www.fastify.io/). It also contains a [Discord bot](https://discord.com/developers/docs/intro) that is used to communicate with the Discord API.
 
 ## Requirements
 
@@ -34,7 +34,7 @@ This project is licensed under the [MIT License](https://opensource.org/license/
 ```
 MIT License
 -----------
-Copyright (c) 2023 Jeremy S.
+© 2023 Jeremy S.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
