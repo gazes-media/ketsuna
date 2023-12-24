@@ -15,7 +15,6 @@ export default class Bot extends Client {
     default_token: "0000000000"
   })
   commands: Map<string, CommandsBase> = new Map<string, CommandsBase>();
-  componentsCollectors: Map<string, ComponentCollector> = new Map<string, ComponentCollector>();
   constructor() {
     const isDev = process.env.NODE_ENV === "development";
     super({

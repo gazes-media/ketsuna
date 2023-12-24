@@ -6,6 +6,7 @@ import MessageComponentWebhook from "./MessageComponent";
 import ModalInteraction from "./ModalInteraction";
 import ModalCollector, { ModalCollectorOptions } from "./ModalCollector";
 import Bot from "..";
+import ComponentCollector, { ComponentCollectorOptions } from "./ComponentCollector";
 export default class InteractionBaseWebhook extends BaseInteraction {
     http: FastifyReply;
     message?: APIMessage;
@@ -66,6 +67,10 @@ export default class InteractionBaseWebhook extends BaseInteraction {
         if (this.channel) {
             return await this.channel.messages.fetch(APIMessage.id);
         }
+    }
+
+    createComponentCollector(options: ComponentCollectorOptions) {
+        return new ComponentCollector(this.bot, options);
     }
 
     showModal(response: APIModalInteractionResponseCallbackData) {

@@ -30,6 +30,6 @@ export default class ComponentCollector extends Collector<Snowflake,MessageCompo
     }
 }
 
-interface ComponentCollectorOptions extends CollectorOptions<[MessageComponentWebhook, ...unknown[]]>{
+export interface ComponentCollectorOptions extends CollectorOptions<[MessageComponentWebhook, ...unknown[]]>{
     message:Message;
 }
