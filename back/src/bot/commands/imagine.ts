@@ -206,7 +206,7 @@ export class Imagine extends CommandsBase {
                         }
                     }, 5000);
                     if(!interactionMessage) return;
-                    let collector = new ComponentCollector(this.client, {
+                    let collector = interaction.createComponentCollector({
                         filter: (componentInteraction) =>{
                             return componentInteraction.customId === "cancel" && componentInteraction.user.id === interaction.user.id;
                         },
