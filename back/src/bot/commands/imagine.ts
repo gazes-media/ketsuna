@@ -1,9 +1,10 @@
-import { ActionRowBuilder, ApplicationCommandOptionChoiceData, ApplicationFlags, AttachmentPayload, AutocompleteInteraction, ButtonBuilder, ButtonStyle, CacheType, CommandInteraction, CommandInteractionOptionResolver, InteractionReplyOptions, Message, MessageEditOptions, MessageFlags, MessageFlagsBitField, SlashCommandBuilder, TextChannel } from "discord.js";
+import { APIActionRowComponent, APIButtonComponent, ActionRowBuilder, ApplicationCommandOptionChoiceData, ApplicationFlags, AttachmentPayload, AutocompleteInteraction, ButtonBuilder, ButtonComponent, ButtonStyle, CacheType, CommandInteraction, CommandInteractionOptionResolver, InteractionReplyOptions, Message, MessageEditOptions, MessageFlags, MessageFlagsBitField, SlashCommandBuilder, TextChannel } from "discord.js";
 import Bot from "../index.js";
 import CommandsBase from "./baseCommands.js";
 import { ModelGenerationInputPostProcessingTypes, ModelGenerationInputStableSamplers } from "../../internal_libs/aihorde.js";
 import CommandInteractionWebHook from "../class/commandInteraction.js";
 import AutocompleteInteractionWebHook from "../class/autoCompleteInteraction.js";
+import ComponentCollector from "../class/ComponentCollector.js";
 
 export class Imagine extends CommandsBase {
     constructor(client: Bot) {
@@ -137,7 +138,20 @@ export class Imagine extends CommandsBase {
 
                                         })
                                     } else {
-                                        // attachmen
+                                        let components: APIActionRowComponent<APIButtonComponent>[] = [
+                                            {
+                                                type: 1,
+                                                components: [
+                                                    new ButtonBuilder()
+                                                        .setCustomId("cancel")
+                                                        .setLabel("Annuler")
+                                                        .setStyle(ButtonStyle.Danger)
+                                                        .setDisabled(false)
+                                                        .toJSON()
+                                                ]
+                                            }
+                                        ];
+                                        // attachment
                                         let wait_time = stat.wait_time || 1;
                                         let files: AttachmentPayload[] = [];
                                         let processed = "";
@@ -156,6 +170,7 @@ export class Imagine extends CommandsBase {
                                         }
                                         let message: MessageEditOptions = {
                                             content: `En cours de génération...\n ${processed}`,
+                                            components: components
                                         }
                                         if (stat.finished && stat.finished > finished) {
                                             finished = stat.finished;
@@ -177,7 +192,7 @@ export class Imagine extends CommandsBase {
                                             interactionMessage?.edit(message);
                                         }
 
-
+                                    
                                     }
                                 } else {
                                     clearInterval(interval);
@@ -190,7 +205,27 @@ export class Imagine extends CommandsBase {
                             })
                         }
                     }, 5000);
+                    if(!interactionMessage) return;
+                    let collector = new ComponentCollector(this.client, {
+                        filter: (componentInteraction) =>{
+                            return componentInteraction.customId === "cancel" && componentInteraction.user.id === interaction.user.id;
+                        },
+                        time: 1000 * 60 * 10,
+                        dispose: true,
+                        message: interactionMessage
+                    });
 
+                    collector.on("collect", (componentInteraction) => {
+                        if(componentInteraction.user.id !== interaction.user.id) return;
+                        collector.stop("cancel");
+                        clearInterval(interval);
+                        this.client.timeouts.get(interaction.command.commandName)?.delete(interaction.user.id);
+                        componentInteraction.edit({
+                            content: "Génération annulée",
+                            components: []
+                        });
+                        this.client.aiHorde.deleteImageGenerationRequest(id);
+                    });
                 }).catch((err) => {
                     this.client.timeouts.get(interaction.command.commandName)?.delete(interaction.user.id);
                     if (interaction.command.deferred) {

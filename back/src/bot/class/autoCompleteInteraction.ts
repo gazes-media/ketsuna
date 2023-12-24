@@ -1,13 +1,13 @@
-import { APICommandAutocompleteInteractionResponseCallbackData, APIInteraction, APIInteractionResponseCallbackData, AutocompleteInteraction, Client, InteractionResponseType } from "discord.js";
+import { APICommandAutocompleteInteractionResponseCallbackData, APIInteraction, AutocompleteInteraction, Client, InteractionResponseType } from "discord.js";
 import InteractionBaseWebhook from "./interaction";
-import { FastifyReply, FastifySchema, FastifyTypeProviderDefault, RawServerDefault, RouteGenericInterface } from "fastify";
-import { IncomingMessage, ServerResponse } from "http";
+import { FastifyReply } from "fastify";
+import Bot from "..";
 
 export default class AutocompleteInteractionWebHook extends InteractionBaseWebhook {
     command: AutocompleteInteraction;
-    constructor(data: APIInteraction, client: Client<true>, res: FastifyReply) {
-        super(data, client, res);
-        this.command = new AutocompleteInteraction(client, data);
+    constructor(data: APIInteraction, bot: Bot, res: FastifyReply) {
+        super(data, bot, res);
+        this.command = new AutocompleteInteraction(this.client, data);
     }
 
     respond(response: APICommandAutocompleteInteractionResponseCallbackData) {

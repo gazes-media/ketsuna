@@ -5,14 +5,22 @@ import { APIInteraction, APIInteractionResponse, InteractionResponseType, Intera
 import { bot } from "../../../main";
 import CommandInteractionWebHook from "../../../bot/class/commandInteraction";
 import AutocompleteInteractionWebHook from "../../../bot/class/autoCompleteInteraction";
+import MessageComponentWebhook from "../../../bot/class/MessageComponent";
+import ModalInteraction from "../../../bot/class/ModalInteraction";
 
+interface ExtendedResponse extends Response {
+    reply: (response: APIInteractionResponse) => void;
+}
 export class InteractionCallback extends Route {
     constructor(app: FastifyInstance) {
         super(app, "/api/callback/interaction");
     }
 
-    postHandler(req: Request, res: Response) {
+    postHandler(req: Request, res: ExtendedResponse) {
         // check if Public Key is set
+        res.reply = function discordReply(response: APIInteractionResponse) {
+            return res.code(200).header('Content-Type', 'application/json; charset=utf-8').send(response);
+        }
         let PUBLIC_KEY = process.env.DISCORD_PUBLIC_KEY;
         if (!PUBLIC_KEY) {
             console.error("No public key set!");
@@ -44,35 +52,54 @@ export class InteractionCallback extends Route {
             }
             try {
                 let body = req.body as APIInteraction;
-                if (body.type === InteractionType.Ping) {
-                    return res.code(200).header('Content-Type', 'application/json; charset=utf-8').send({ type: InteractionResponseType.Pong });
-                } else if(body.type === InteractionType.ApplicationCommand) {
-                    let client= bot.application?.client;
-                    if (!client) {
-                        console.error("No client");
-                        return res.code(200).header('Content-Type', 'application/json; charset=utf-8').send({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: "No client", flags: MessageFlags.Ephemeral } });
+                let errorResponse: APIInteractionResponse = {
+                    type: InteractionResponseType.ChannelMessageWithSource,
+                    data: {
+                        content: "Error",
+                        flags: MessageFlags.Ephemeral
                     }
-                    let interaction = new CommandInteractionWebHook(body, client, res);
-                    bot.commands.get(interaction.command.commandName)?.run(interaction);
+                }
+                if (body.type === InteractionType.Ping) {
+                    return res.reply({ type: InteractionResponseType.Pong });
+                } else if(body.type === InteractionType.ApplicationCommand) {
+                    let interaction = new CommandInteractionWebHook(body, bot, res);
+                    let command =  bot.commands.get(interaction.command.commandName);
+                    if(command){
+                        command.run(interaction);
+                    }else{
+                        return res.reply(errorResponse);
+                    }
                 } else if(body.type === InteractionType.ApplicationCommandAutocomplete) {
-                    let client= bot.application?.client;
-                    if (!client) {
-                        console.error("No client");
-                        let AutoErrorComplete: APIInteractionResponse = {
+                    let AutoErrorComplete: APIInteractionResponse = {
                             type: InteractionResponseType.ApplicationCommandAutocompleteResult,
                             data: {
                                 choices: [{
-                                    name: "No client",
-                                    value: "No client"
+                                    name: "Error",
+                                    value: "Error"
                                 }],
                                 }
                             }
-                        return res.code(200).header('Content-Type', 'application/json; charset=utf-8').send(AutoErrorComplete);
+                    let interaction = new AutocompleteInteractionWebHook(body, bot, res);
+                    let command = bot.commands.get(interaction.command.commandName);
+                    if(command){
+                        command.autocomplete?.(interaction);
+                    }else{
+                        return res.reply(AutoErrorComplete);
                     }
-                    let interaction = new AutocompleteInteractionWebHook(body, client, res);
-                    bot.commands.get(interaction.command.commandName)?.autocomplete?.(interaction);
-                } else {
-                    return res.code(200).header('Content-Type', 'application/json; charset=utf-8').send({ type: InteractionResponseType.ChannelMessageWithSource, data: { content: "Response Not Handled", flags: MessageFlags.Ephemeral } });
+                } else if(body.type === InteractionType.MessageComponent) {
+                    let interaction = new MessageComponentWebhook(body, bot, res);
+                    if(interaction.isMessageComponent()){
+                        bot.emitCustomInteraction(interaction);
+                    }else{
+                        return res.reply(errorResponse);
+                    }
+                }else if(body.type === InteractionType.ModalSubmit){
+                    let interaction = new ModalInteraction(body, bot, res);
+                    if(interaction.isModalSubmit()){
+                        bot.emitCustomInteraction(interaction);
+                    }
+                }else {
+                    return res.reply(errorResponse);
                 }
             } catch (e) {
                 console.error(e);
