@@ -1,6 +1,15 @@
 # Ketsuna (Back/Front)
 
 This is the full back-end and front-end of Ketsuna. It is a REST API built with [Node.js](https://nodejs.org/en/) and [Fastify](https://www.fastify.io/). It also contains a [Discord bot](https://discord.com/developers/docs/intro) that is used to communicate with the Discord API.
+The Front-end is built with [React](https://reactjs.org/) and [Next.js](https://nextjs.org/).
+
+## Features
+
+- [x] Discord bot
+- [x] REST API
+- [x] Front-end
+- [ ] Database
+- [ ] Docker support
 
 ## Requirements
 
@@ -25,7 +34,8 @@ This is the full back-end and front-end of Ketsuna. It is a REST API built with 
     # The AI Horde API key
     AI_HORDE_KEY=
     ```
-4. Run the server with `pnpm start`
+4. Build the project with `pnpm build`
+5. Run the project with `pnpm start` or `node dist/main.js`
 
 ## License
 

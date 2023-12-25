@@ -21,6 +21,11 @@
     "ts-node": "^10.9.2"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
+    "@fontsource/roboto": "^5.0.8",
+    "@mui/icons-material": "^5.15.2",
+    "@mui/material": "^5.15.2",
     "@thunder04/supermap": "^3.0.3",
     "centra": "^2.6.0",
     "discord-interactions": "^3.4.0",
