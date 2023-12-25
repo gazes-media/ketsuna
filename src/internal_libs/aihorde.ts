@@ -1,4 +1,4 @@
-import SuperMap from "./supermap.js";
+import SuperMap from "@thunder04/supermap"
 import Centra from "centra"
 import { IncomingMessage } from "http"
 import { readFileSync } from "fs"

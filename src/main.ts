@@ -6,7 +6,7 @@ dotenv.config();
 export const bot = new Bot();
 const app = fastify();
 const website = new Website(app);
-
+ 
 bot.init();
 website.init();
 

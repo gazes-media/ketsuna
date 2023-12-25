@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from "discord.js";
-import Bot from "../index.js";
-import CommandInteractionWebHook from "../class/commandInteraction.js";
-import AutocompleteInteractionWebHook from "../class/autoCompleteInteraction.js";
+import Bot from "../index";
+import CommandInteractionWebHook from "../class/commandInteraction";
+import AutocompleteInteractionWebHook from "../class/autoCompleteInteraction";
 
 type Commande = SlashCommandBuilder | Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
 export default abstract class CommandsBase {

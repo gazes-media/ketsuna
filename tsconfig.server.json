@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",  // Reference to the base configuration file to extend from
+
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": "dist",
+    "target": "ES2016",
+    "isolatedModules": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "noEmit": false  // Remove the trailing comma after the last property
+  }
+}

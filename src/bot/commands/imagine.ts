@@ -1,11 +1,9 @@
 import { APIActionRowComponent, APIButtonComponent, ActionRowBuilder, ApplicationCommandOptionChoiceData, ApplicationFlags, AttachmentPayload, AutocompleteInteraction, ButtonBuilder, ButtonComponent, ButtonStyle, CacheType, CommandInteraction, CommandInteractionOptionResolver, InteractionReplyOptions, Message, MessageEditOptions, MessageFlags, MessageFlagsBitField, SlashCommandBuilder, TextChannel } from "discord.js";
-import Bot from "../index.js";
-import CommandsBase from "./baseCommands.js";
-import { ModelGenerationInputPostProcessingTypes, ModelGenerationInputStableSamplers } from "../../internal_libs/aihorde.js";
-import CommandInteractionWebHook from "../class/commandInteraction.js";
-import AutocompleteInteractionWebHook from "../class/autoCompleteInteraction.js";
-import ComponentCollector from "../class/ComponentCollector.js";
-
+import Bot from "../index";
+import CommandsBase from "./baseCommands";
+import { ModelGenerationInputPostProcessingTypes, ModelGenerationInputStableSamplers } from "../../internal_libs/aihorde";
+import CommandInteractionWebHook from "../class/commandInteraction";
+import AutocompleteInteractionWebHook from "../class/autoCompleteInteraction";
 export class Imagine extends CommandsBase {
     constructor(client: Bot) {
         super(client, new SlashCommandBuilder()
