@@ -21,7 +21,7 @@ const pages = [{
     name: 'CGU',
     href: '/cgu'
 }];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const settings = ['In Progress'];
 
 export default function ResponsiveAppBar() {
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
