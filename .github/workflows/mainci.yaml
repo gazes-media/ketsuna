@@ -41,4 +41,5 @@ jobs:
           git checkout -b prod
           git add .
           git commit -m "Builded data for prod"
-          git push origin prod
+          # Force push to prod branch
+            git push -f origin prod
