@@ -28,7 +28,6 @@ jobs:
 
       - name: Remove src and node_modules
         run: |
-          rm -rf src
           rm -rf node_modules
           rm -f .gitignore  # Remove .gitignore file
           # add a new .gitignore file with .gitignore content .env
