@@ -1,3 +1,4 @@
+"use strict";
 import NextHead from 'next/head'
 import Theme from '../components/theme';
 import ButtonAppBar from '../components/Appbar';

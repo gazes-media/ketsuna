@@ -71,7 +71,7 @@ export default function ResponsiveAppBar() {
                         <IconButton
                             size="large"
                             aria-label="account of current user"
-                            aria-controls="menu-appbar"
+                            aria-controls="menu-appbar-mobile"
                             aria-haspopup="true"
                             onClick={handleOpenNavMenu}
                             color="inherit"
@@ -96,9 +96,9 @@ export default function ResponsiveAppBar() {
                                 display: { xs: 'block', md: 'none' },
                             }}
                         >
-                            {pages.map((page) => (
-                            <Link to={`${page.href}`}>
-                                <MenuItem key={page.href} onClick={handleCloseNavMenu}>
+                        {pages.map((page) => (
+                            <Link to={`${page.href}`} key={page.href}>
+                                <MenuItem onClick={handleCloseNavMenu}>
                                     <Typography textAlign="center">
                                         {page.name}
                                     </Typography>
@@ -127,9 +127,8 @@ export default function ResponsiveAppBar() {
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
                         {pages.map((page) => (
-                        <Link to={`${page.href}`}>
+                        <Link to={`${page.href}`} key={page.href}>
                             <Button
-                                key={page.href}
                                 onClick={handleCloseNavMenu}
                                 sx={{ my: 2, color: 'white', display: 'block' }}
                             >
@@ -142,7 +141,7 @@ export default function ResponsiveAppBar() {
                     <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Open settings">
                             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                <Avatar alt="K" src="/static/images/avatar/2.jpg" />
+                                <Avatar alt="Ketsuna" />
                             </IconButton>
                         </Tooltip>
                         <Menu
