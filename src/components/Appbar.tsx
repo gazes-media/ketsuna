@@ -20,6 +20,9 @@ const pages = [{
 }, {
     name: 'CGU',
     href: '/cgu'
+},{
+    name: 'TOS',
+    href: '/tos'
 }];
 const settings = ['In Progress'];
 
