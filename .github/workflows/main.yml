@@ -43,7 +43,7 @@ jobs:
           rm .gitignore || true
           echo ".env" > .gitignore
           echo "node_modules" >> .gitignore
-          echo "src" >> .gitignore
+          rm -rf src
 
       - name: Push changes to prod branch
         run: |
