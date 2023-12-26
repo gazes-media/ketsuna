@@ -3,7 +3,7 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - main # You can adjust the branch name as needed
+      - main
 
 jobs:
   build:
@@ -12,6 +12,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
+      - name: Remove existing prod branch (if exists)
+        run: |
+          git fetch --prune
+          git show-ref --verify --quiet refs/heads/prod && git branch -D prod || true
+          git push origin --delete prod || true
+
+      - name: Create prod branch from main
+        run: |
+          git checkout -b prod
+          git push -u origin prod
 
       - name: Use Node.js 20.x
         uses: actions/setup-node@v2
@@ -27,15 +38,16 @@ jobs:
       - name: Build with pnpm
         run: pnpm build
 
-      - name: Remove .gitignore and create new
+      - name: Modify .gitignore
         run: |
-          rm .gitignore
+          rm .gitignore || true
           echo ".env" > .gitignore
           echo "node_modules" >> .gitignore
 
-      - name: Push changes to a branch
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: prod
-          force: true # Override the branch content
+      - name: Push changes to prod branch
+        run: |
+          git config --global user.email "contact@jeremysoler.com"
+          git config --global user.name "Garder500[Bot]"
+          git add .
+          git commit -m "Update everythings"
+          git push origin prod --force
