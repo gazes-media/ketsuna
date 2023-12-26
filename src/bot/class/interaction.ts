@@ -1,4 +1,4 @@
-import { APIInteraction, APIInteractionResponse, APIInteractionResponseCallbackData, APIMessage, APIModalInteractionResponseCallbackData, AutocompleteInteraction, BaseInteraction, ButtonInteraction, CacheType, Client, InteractionResponseType, InteractionType, MessageComponentInteraction, RESTGetAPIWebhookWithTokenMessageResult, Routes } from "discord.js";
+import { APIInteraction, APIInteractionResponse, APIInteractionResponseCallbackData, APIMessage, APIModalInteractionResponseCallbackData, AutocompleteInteraction, BaseInteraction, ButtonInteraction, CacheType, Client, InteractionResponseType, InteractionType, InteractionWebhook, MessageComponentInteraction, MessagePayload, MessageResolvable, RESTGetAPIWebhookWithTokenMessageResult, Routes, WebhookMessageEditOptions } from "discord.js";
 import { FastifyReply } from "fastify";
 import AutocompleteInteractionWebHook from "./autoCompleteInteraction";
 import CommandInteractionWebHook from "./commandInteraction";
@@ -12,12 +12,15 @@ export default class InteractionBaseWebhook extends BaseInteraction {
     message?: APIMessage;
     customId?: string;
     bot: Bot;
+    webhook: InteractionWebhook;
+    timeCreated: number = Date.now();
     constructor(data: APIInteraction, bot: Bot, res: FastifyReply) {
         let client = bot.application?.client;
         if(!client) throw new Error("Client is not ready");
         super(client, data);
         this.http = res;
         this.bot = bot;
+        this.webhook = new InteractionWebhook(client, this.id, this.token);
         if(data.message) {
             this.message = data.message;
         }
@@ -30,6 +33,12 @@ export default class InteractionBaseWebhook extends BaseInteraction {
 
     json(data: APIInteractionResponse){
         return this.http.code(200).header('Content-Type', 'application/json; charset=utf-8').send(data);
+    }
+    /*
+    * Checks if the interaction is expired or not (15 minutes)
+    */
+    checkIfExpired() {
+        return Date.now() - this.timeCreated > (15 * 60 * 1000);
     }
 
     reply(response: APIInteractionResponseCallbackData) {
@@ -45,28 +54,31 @@ export default class InteractionBaseWebhook extends BaseInteraction {
             type: InteractionResponseType.PremiumRequired,
         });
     }
-
-    defer() {
-        return this.json({ type: InteractionResponseType.DeferredMessageUpdate });
-    }
     
-    async edit(response: APIInteractionResponseCallbackData) {
+    
+    async followUp(response: APIInteractionResponseCallbackData) {
         return this.json({
-            type: InteractionResponseType.UpdateMessage,
+            type: InteractionResponseType.DeferredChannelMessageWithSource,
             data: response
         });
     }
-    
+
+    async editReply(options: string | MessagePayload | WebhookMessageEditOptions){
+        if(this.checkIfExpired()) throw new Error("Interaction is expired");
+        return this.webhook.editMessage("@original", options);
+    }
+
     async getMessage() {
-        if(this.message) {
-            if(this.channel) {
-                return await this.channel.messages.fetch(this.message.id);
-            }
-        }
-        let APIMessage = await this.client.rest.get(Routes.webhookMessage(this.client.application.id, this.token)) as RESTGetAPIWebhookWithTokenMessageResult;
-        if (this.channel) {
-            return await this.channel.messages.fetch(APIMessage.id);
-        }
+       if(this.checkIfExpired()) throw new Error("Interaction is expired");
+       return await this.webhook.fetchMessage("@original");
+    }
+
+    async deleteReply() {
+        return this.webhook.deleteMessage("@original");
+    }
+
+    async createMessage(options: string | MessagePayload){
+        return await this.webhook.send(options);
     }
 
     createComponentCollector(options: ComponentCollectorOptions) {

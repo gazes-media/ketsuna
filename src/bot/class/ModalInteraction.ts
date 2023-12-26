@@ -8,10 +8,11 @@ export default class ModalInteraction extends InteractionBaseWebhook {
         super(data, bot, res);
     }
 
-    submit(response: APIModalInteractionResponseCallbackData) {
-        return this.json({
-            type: InteractionResponseType.Modal,
-            data: response
-        });
+    getValue(key: string): string | null {
+        let value = "";
+        if(this.isModalSubmit()) {
+            value = this.fields.getTextInputValue(key);
+        }
+        return value !== "" ? value : null;
     }
 }
