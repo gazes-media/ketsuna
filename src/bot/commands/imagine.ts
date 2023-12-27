@@ -107,6 +107,13 @@ export class Imagine extends CommandsBase {
                 }).then(async(result) => {
                     let id = result.id as string;
                     let finished = 0;
+                    let collector = await interaction.createComponentCollector({
+                        filter: (componentInteraction) =>{
+                            return componentInteraction.customId === "cancel" && componentInteraction.user.id === interaction.user.id;
+                        },
+                        time: 1000 * 60 * 10,
+                        dispose: true,
+                    });
                     let interval: NodeJS.Timeout = setInterval(() => {
                         if (id) {
                             ai.getImageGenerationCheck(id, {
@@ -116,6 +123,7 @@ export class Imagine extends CommandsBase {
 
                                     if (stat.done) {
                                         clearInterval(interval);
+                                        collector.stop("done");
                                         this.client.timeouts.get(interaction.command.commandName)?.delete(interaction.user.id);
                                         ai.getImageGenerationStatus(id).then((status) => {
                                             let generations = status.generations;
@@ -188,8 +196,6 @@ export class Imagine extends CommandsBase {
                                         } else {
                                             interaction.editReply(message);
                                         }
-
-                                    
                                     }
                                 } else {
                                     clearInterval(interval);
@@ -202,16 +208,8 @@ export class Imagine extends CommandsBase {
                             })
                         }
                     }, 5000);
-                    let collector = await interaction.createComponentCollector({
-                        filter: (componentInteraction) =>{
-                            return componentInteraction.customId === "cancel" && componentInteraction.user.id === interaction.user.id;
-                        },
-                        time: 1000 * 60 * 10,
-                        dispose: true,
-                    });
 
                     collector.on("collect", (componentInteraction) => {
-                        if(componentInteraction.user.id !== interaction.user.id) return;
                         collector.stop("cancel");
                         clearInterval(interval);
                         this.client.timeouts.get(interaction.command.commandName)?.delete(interaction.user.id);

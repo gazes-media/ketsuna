@@ -8,13 +8,12 @@ export default class ComponentCollector extends Collector<Snowflake,MessageCompo
     public dispose(interaction: MessageComponentWebhook): Snowflake| null {
         if(!interaction.isMessageComponentWebhook()) return null;
         if(interaction.message?.id !== this.message.id) return null;
-        if(this.message.channel.id !== interaction.channelId) return null;        
         return interaction.id;
     }
     public collect(interaction: MessageComponentWebhook): Snowflake| null {
         if(!interaction.isMessageComponentWebhook()) return null;
+        if(interaction.channelId !== this.message.channelId) return null;
         if(interaction.message?.id !== this.message.id) return null;
-        if(this.message.channel.id !== interaction.channelId) return null;
         return interaction.id;
     }
 
@@ -22,6 +21,7 @@ export default class ComponentCollector extends Collector<Snowflake,MessageCompo
         let client = bot.application?.client;
         if(!client) throw new Error("Client is not ready");
         super(client, options);
+        console.log(options.message);
         this.message = options.message;
         bot.onCustomInteraction(this.handleCollect);
         this.on("end", () => {
