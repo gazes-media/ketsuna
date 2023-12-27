@@ -21,7 +21,6 @@ export default class ComponentCollector extends Collector<Snowflake,MessageCompo
         let client = bot.application?.client;
         if(!client) throw new Error("Client is not ready");
         super(client, options);
-        console.log(options.message);
         this.message = options.message;
         bot.onCustomInteraction(this.handleCollect);
         this.on("end", () => {
