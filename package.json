@@ -2,37 +2,13 @@
   "name": "ketsuna",
   "version": "1.0.0",
   "description": "Ketsuna Discord Bot",
-  "source": "dist/main.js",
-  "main": "out/bundle.js",
+  "main": "dist/main.js",
   "scripts": {
     "dev": "nodemon",
-    "build": "next build && swc src --out-dir dist && parcel build",
-    "start": "cross-env NODE_ENV=production node out/bundle.js"
+    "build": "next build && swc src --out-dir dist",
+    "start": "cross-env NODE_ENV=production node dist/main.js"
   },
   "author": "garder500",
-  "engines": {
-    "node": ">=20"
-  },
-  "targets": {
-    "main": {
-      "includeNodeModules": {
-        "react": false,
-        "react-dom": false,
-        "@emotion/react": false,
-        "@emotion/styled": false,
-        "@mui/icons-material": false,
-        "@mui/material": false
-      }
-    }
-  },
-  "resolvers": {
-    "@parcel/resolver-default": {
-      "packageExports": true,
-      "modules": [
-        "node_modules"
-      ]
-    }
-  },
   "license": "ISC",
   "devDependencies": {
     "@swc/cli": "^0.1.63",
