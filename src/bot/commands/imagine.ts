@@ -58,10 +58,9 @@ export class Imagine extends CommandsBase {
         }
 
         // get the option value
-        let interactionMessage = await interaction.reply({
+        await interaction.reply({
             content: "Requête en cours de traitement...",
         })
-        if(!interactionMessage) return;
 
         let options = interaction.command.options
         if (options instanceof CommandInteractionOptionResolver) {
@@ -105,7 +104,7 @@ export class Imagine extends CommandsBase {
                     shared: true,
                 }, {
                     token: interaction.user.id == "243117191774470146" ? process.env.AI_HORDE_KEY : "0000000000",
-                }).then((result) => {
+                }).then(async(result) => {
                     let id = result.id as string;
                     let finished = 0;
                     let interval: NodeJS.Timeout = setInterval(() => {
@@ -121,7 +120,7 @@ export class Imagine extends CommandsBase {
                                         ai.getImageGenerationStatus(id).then((status) => {
                                             let generations = status.generations;
                                             if (generations && generations.length > 0) {
-                                                interactionMessage?.edit({
+                                                interaction.editReply({
                                                     content: "",
                                                     files: generations.map((generation, i) => {
                                                         return {
@@ -184,10 +183,10 @@ export class Imagine extends CommandsBase {
                                                 if (files.length > 0) {
                                                     message.files = files;
                                                 }
-                                                interactionMessage?.edit(message);
+                                                interaction.editReply(message);
                                             })
                                         } else {
-                                            interactionMessage?.edit(message);
+                                            interaction.editReply(message);
                                         }
 
                                     
@@ -195,7 +194,7 @@ export class Imagine extends CommandsBase {
                                 } else {
                                     clearInterval(interval);
                                     this.client.timeouts.get(interaction.command.commandName)?.delete(interaction.user.id);
-                                    interactionMessage?.edit({
+                                    interaction.editReply({
                                         content: "Impossible de générer l'image, le model demandé n'est pas disponible",
                                         components: []
                                     });
@@ -203,14 +202,12 @@ export class Imagine extends CommandsBase {
                             })
                         }
                     }, 5000);
-                    if(!interactionMessage) return;
-                    let collector = interaction.createComponentCollector({
+                    let collector = await interaction.createComponentCollector({
                         filter: (componentInteraction) =>{
                             return componentInteraction.customId === "cancel" && componentInteraction.user.id === interaction.user.id;
                         },
                         time: 1000 * 60 * 10,
                         dispose: true,
-                        message: interactionMessage
                     });
 
                     collector.on("collect", (componentInteraction) => {
@@ -227,12 +224,12 @@ export class Imagine extends CommandsBase {
                 }).catch((err) => {
                     this.client.timeouts.get(interaction.command.commandName)?.delete(interaction.user.id);
                     if (interaction.command.deferred) {
-                        interactionMessage?.edit({
+                        interaction.editReply({
                             content: "Une erreur est survenue, le contenu demandé est peut-être trop long ou trop complexe, ou la demande est trop non éthique pour être traitée.",
                             components: []
                         });
                     } else {
-                        interactionMessage?.edit({
+                        interaction.editReply({
                             content: "Une erreur est survenue, le contenu demandé est peut-être trop long ou trop complexe, ou la demande est trop non éthique pour être traitée.",
                             components: []
                         });

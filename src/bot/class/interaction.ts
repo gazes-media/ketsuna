@@ -1,4 +1,4 @@
-import { APIInteraction, APIInteractionResponse, APIInteractionResponseCallbackData, APIMessage, APIModalInteractionResponseCallbackData, AutocompleteInteraction, BaseInteraction, ButtonInteraction, CacheType, Client, InteractionResponseType, InteractionType, InteractionWebhook, MessageComponentInteraction, MessagePayload, MessageResolvable, RESTGetAPIWebhookWithTokenMessageResult, Routes, WebhookMessageEditOptions } from "discord.js";
+import { APIInteraction, APIInteractionResponse, APIInteractionResponseCallbackData, APIMessage, APIModalInteractionResponseCallbackData, AutocompleteInteraction, BaseInteraction, ButtonInteraction, CacheType, Client, InteractionResponseType, InteractionType, InteractionWebhook, Message, MessageComponentInteraction, MessagePayload, MessageResolvable, RESTGetAPIWebhookWithTokenMessageResult, Routes, WebhookMessageEditOptions } from "discord.js";
 import { FastifyReply } from "fastify";
 import AutocompleteInteractionWebHook from "./autoCompleteInteraction";
 import CommandInteractionWebHook from "./commandInteraction";
@@ -20,7 +20,7 @@ export default class InteractionBaseWebhook extends BaseInteraction {
         super(client, data);
         this.http = res;
         this.bot = bot;
-        this.webhook = new InteractionWebhook(client, this.id, this.token);
+        this.webhook = new InteractionWebhook(client, this.applicationId, this.token);
         if(data.message) {
             this.message = data.message;
         }
@@ -46,7 +46,14 @@ export default class InteractionBaseWebhook extends BaseInteraction {
             type: InteractionResponseType.ChannelMessageWithSource,
             data: response
         });
-        return this.getMessage();
+        return new Promise<Message>(async (resolve, reject) => {
+            try{
+                let message = await this.webhook.fetchMessage("@original");
+                resolve(message);
+            }catch(e) {
+                reject(e);
+            }
+        });
     }
 
     premiumReply() {
@@ -81,8 +88,13 @@ export default class InteractionBaseWebhook extends BaseInteraction {
         return await this.webhook.send(options);
     }
 
-    createComponentCollector(options: ComponentCollectorOptions) {
-        return new ComponentCollector(this.bot, options);
+    async createComponentCollector(options: Omit<ComponentCollectorOptions,"message">) {
+        let message = await this.getMessage();
+        if(!message) throw new Error("Message is not found");
+        return new ComponentCollector(this.bot, {
+            ...options,
+            message
+        });
     }
 
     showModal(response: APIModalInteractionResponseCallbackData) {
@@ -92,7 +104,7 @@ export default class InteractionBaseWebhook extends BaseInteraction {
         });
     }
 
-    awaitModalSubmit(options:ModalCollectorOptions ) {
+    awaitModalSubmit(options:Omit<ModalCollectorOptions,"message"> ) {
         const collector = new ModalCollector(this.bot, options);
         return new Promise<ModalInteraction>((resolve, reject) => {
             collector.once("end", (collected, reason) => {
