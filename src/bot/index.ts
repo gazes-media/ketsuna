@@ -27,9 +27,9 @@ export default class Bot extends Client {
       allowedMentions: { parse: ["users", "roles"], repliedUser: true },
       presence: {
         status: "online", activities: [{
-          name: isDev ? "in development" : "Ketsuna is here to help you!",
+          name: isDev ? "in development" : process.env.DISCORD_STATUS_NAME || "Ketsuna is the Best Bot",
           type: ActivityType.Playing,
-          state: "Ketsuna is the Best Bot",
+          state: process.env.DISCORD_STATUS_STATE || "Ketsuna is the Best Bot",
         }]
       },
     });

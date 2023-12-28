@@ -26,11 +26,13 @@ The Front-end is built with [React](https://reactjs.org/) and [Next.js](https://
     ```env
     # The port the server will listen on
     PORT=3000
-    DATABASE_URL=postgres://user:password@host:port/database
     # The Discord bot token
     DISCORD_TOKEN=
     # The Discord bot client public key
     DISCORD_PUBLIC_KEY=
+    # Config the Discord Status
+    DISCORD_STATUS_NAME=The best Bot ever
+    DISCORD_STATUS_STATE=The Best AI Bot
     # The AI Horde API key
     AI_HORDE_KEY=
     ```
