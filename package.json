@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon",
     "build": "next build && swc src --out-dir dist",
+    "migrate": "prisma generate && prisma db push",
     "start": "cross-env NODE_ENV=production node dist/main.js"
   },
   "author": "garder500",

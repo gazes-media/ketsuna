@@ -14,7 +14,7 @@ The Front-end is built with [React](https://reactjs.org/) and [Next.js](https://
 ## Requirements
 
 - [Node.js](https://nodejs.org/en/) (v20.0.0 or higher)
-- [PostgreSQL](https://www.postgresql.org/) (v13.0 or higher)
+- [Prisma](https://www.prisma.io/) (v3.0.0 or higher)
 - [PNPM](https://pnpm.io/) (v6.0.0 or higher)
 
 ## Installation
@@ -34,8 +34,9 @@ The Front-end is built with [React](https://reactjs.org/) and [Next.js](https://
     # The AI Horde API key
     AI_HORDE_KEY=
     ```
-4. Build the project with `pnpm build`
-5. Run the project with `pnpm start` or `node dist/main.js`
+4. Run the database migrations with `pnpm migrate` (this will create the database tables)
+5. Build the project with `pnpm build`
+6. Run the project with `pnpm start` or `node dist/main.js`
 
 ## License
 
