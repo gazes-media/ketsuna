@@ -1,9 +1,9 @@
-import { SlashCommandBuilder } from "discord.js";
+import { ApplicationCommandData, ApplicationCommandDataResolvable, RESTPostAPIApplicationCommandsJSONBody, SlashCommandBuilder } from "discord.js";
 import Bot from "../index";
 import CommandInteractionWebHook from "../class/commandInteraction";
 import AutocompleteInteractionWebHook from "../class/autoCompleteInteraction";
 
-type Commande = SlashCommandBuilder | Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
+type Commande = RESTPostAPIApplicationCommandsJSONBody;
 export default abstract class CommandsBase {
     name: string;
     client: Bot;

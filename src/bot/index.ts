@@ -4,6 +4,8 @@ import * as commandList from "./list.commands";
 import CommandsBase from "./commands/baseCommands";
 import ComponentCollector from "./class/ComponentCollector";
 import InteractionBaseWebhook from "./class/interaction";
+import { PrismaClient } from "@prisma/client";
+import crypto from "crypto";
 export default class Bot extends Client {
   timeouts: Map<string, Map<string, boolean>> = new Map<string, Map<string, boolean>>();
   aiHorde: AIHorde = new AIHorde({
@@ -15,6 +17,8 @@ export default class Bot extends Client {
     default_token: "0000000000"
   })
   commands: Map<string, CommandsBase> = new Map<string, CommandsBase>();
+  database: PrismaClient;
+  security_key: Buffer;
   constructor() {
     const isDev = process.env.NODE_ENV === "development";
     super({
@@ -29,6 +33,8 @@ export default class Bot extends Client {
         }]
       },
     });
+    let key = process.env.SECURITY_KEY || "R5U8X/A?D(G+KbPeShVmYq3t6w9z$C&F";
+    this.security_key = Buffer.from(key, "utf-8");
   }
 
   public async init() {
@@ -72,6 +78,25 @@ export default class Bot extends Client {
   offCustomInteraction(listener: (data: InteractionBaseWebhook) => Awaitable<void>) {
     return this.off("customInteraction", listener);
   }
+
+
+  decryptString(hash: string){
+		if(!hash.includes(":")) return hash
+		if(!this.security_key) return undefined;
+		const iv = Buffer.from(hash.split(':')[1]!, 'hex');
+		const encryptedText =  Buffer.from(hash.split(':')[0]!, "hex");
+		const decipher = crypto.createDecipheriv('aes-256-cbc', this.security_key, iv);
+		const decrpyted = Buffer.concat([decipher.update(encryptedText), decipher.final()]);
+		return decrpyted.toString("utf-8");
+	};
+
+	encryptString(text: string){
+		if(!this.security_key) return undefined;
+		const iv = crypto.randomBytes(16);
+		const cipher = crypto.createCipheriv('aes-256-cbc', this.security_key, iv);
+		const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
+		return encrypted.toString('hex') + ":" + iv.toString('hex');
+	};
 
 }
 

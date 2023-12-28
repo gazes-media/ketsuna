@@ -5,9 +5,11 @@ import Bot from "..";
 
 export default class AutocompleteInteractionWebHook extends InteractionBaseWebhook {
     command: AutocompleteInteraction;
+    options: AutocompleteInteraction["options"];
     constructor(data: APIInteraction, bot: Bot, res: FastifyReply) {
         super(data, bot, res);
         this.command = new AutocompleteInteraction(this.client, data);
+        this.options = this.command.options;
     }
 
     respond(response: APICommandAutocompleteInteractionResponseCallbackData) {

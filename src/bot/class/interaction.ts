@@ -111,10 +111,17 @@ export default class InteractionBaseWebhook extends BaseInteraction {
 
     awaitModalSubmit(options:ModalCollectorOptions ) {
         return new Promise<ModalInteraction>((resolve, reject) => {
-            const collector = new ModalCollector(this.bot, options);
-            collector.once("collect", (interaction) => {
-                console.log(interaction);
-                resolve(interaction);
+            const collector = new ModalCollector(this.bot, {
+                ...options,
+                max: 1
+            });
+            collector.on("end", (collected, reason) => {
+                let interaction = collected.first();
+                if(interaction) {
+                    resolve(interaction);
+                }else{
+                    reject(reason);
+                }
             });
         });
     }

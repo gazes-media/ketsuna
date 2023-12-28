@@ -1,2 +1,1 @@
-export * from "./commands/imagine"
-// export * from "./commands/testfakePoll"
+export * from "./commands/ai"
