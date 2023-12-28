@@ -10,7 +10,7 @@ export default async function Login(command: CommandsBase, interaction: CommandI
     });
     let currentToken = "";
     if (userDatabase) {
-        currentToken = this.client.decryptString(userDatabase.horde_token);
+        currentToken = command.client.decryptString(userDatabase.horde_token);
     }
     interaction.showModal(new ModalBuilder()
         .setTitle("Connexion à l'IA Horde")
@@ -40,19 +40,23 @@ export default async function Login(command: CommandsBase, interaction: CommandI
     })
 
     let token = modal.getValue("token");
-    if (!token) modal.reply({
+    if (!token) {
+    modal.reply({
         content: "Vous devez entrer un token",
         flags: MessageFlags.Ephemeral
     });
+    return;
+}
     modal.followUp({
         content: "Vérification du token...",
         flags: MessageFlags.Ephemeral
     });
-    let ai = this.client.aiHorde;
+    let ai = command.client.aiHorde;
     try {
         let user = await ai.findUser({
             token
         });
+        console.log(`${user.username}, as ${user.kudos} kudos`);
     } catch (e) {
         modal.editReply({
             content: "Le token est invalide",
@@ -60,12 +64,12 @@ export default async function Login(command: CommandsBase, interaction: CommandI
         return;
     }
     if (userDatabase) {
-        this.client.database.users.update({
+        command.client.database.users.update({
             where: {
                 id: interaction.user.id
             },
             data: {
-                horde_token: this.client.encryptString(token)
+                horde_token: command.client.encryptString(token)
             }
         }).then(() => {
             modal.editReply({
@@ -77,10 +81,10 @@ export default async function Login(command: CommandsBase, interaction: CommandI
             });
         });
     } else {
-        this.client.database.users.create({
+        command.client.database.users.create({
             data: {
                 id: interaction.user.id,
-                horde_token: this.client.encryptString(token)
+                horde_token: command.client.encryptString(token)
             }
         }).then(() => {
             modal.editReply({
