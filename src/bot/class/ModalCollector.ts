@@ -1,7 +1,6 @@
 import { Collector, Snowflake, CollectorOptions } from "discord.js";
 import Bot from "..";
 import ModalInteraction from "./ModalInteraction";
-import InteractionBaseWebhook from "./interaction";
 
 export default class ModalCollector extends Collector<Snowflake,ModalInteraction, unknown[]> {
     public dispose(interaction: ModalInteraction): Snowflake| null {
@@ -19,7 +18,7 @@ export default class ModalCollector extends Collector<Snowflake,ModalInteraction
         super(client, options);
         bot.onCustomInteraction(this.handleCollect);
         this.on("end", () => {
-            bot.offCustomInteraction(this.handleCollect);
+            bot.offCustomInteraction(this.handleDispose);
         })
         
     }

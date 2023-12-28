@@ -37,6 +37,19 @@ export default class Bot extends Client {
     this.on("ready", () => {
       console.log("Bot is ready!");
       this.loadCommands();
+      setTimeout(() => {
+        this.application.commands.fetch().then((commands) => {
+          commands.forEach((command) => {
+            if (!this.commands.has(command.name)) {
+              command.delete().then(() => {
+                console.log(`Command ${command.name} deleted`);
+              }).catch((err) => {
+                console.error(`Error while deleting command ${command.name}: ${err}`);
+              });
+            }
+          });
+        });
+      }, 1000 * 5);
     });
   }
 

@@ -1,4 +1,4 @@
-import { APIInteraction, APIInteractionResponse, APIInteractionResponseCallbackData, APIMessage, APIModalInteractionResponseCallbackData, AutocompleteInteraction, BaseInteraction, ButtonInteraction, CacheType, Client, InteractionResponseType, InteractionType, InteractionWebhook, Message, MessageComponentInteraction, MessagePayload, MessageResolvable, RESTGetAPIWebhookWithTokenMessageResult, Routes, WebhookMessageEditOptions } from "discord.js";
+import { APIInteraction, APIInteractionResponse, APIInteractionResponseCallbackData, APIMessage, APIModalComponent, APIModalInteractionResponseCallbackData, AutocompleteInteraction, BaseInteraction, ButtonInteraction, CacheType, Client, Component, InteractionReplyOptions, InteractionResponseType, InteractionType, InteractionWebhook, Message, MessageComponentInteraction, MessagePayload, MessageResolvable, ModalSubmitActionRowComponent, RESTGetAPIWebhookWithTokenMessageResult, Routes, WebhookMessageEditOptions } from "discord.js";
 import { FastifyReply } from "fastify";
 import AutocompleteInteractionWebHook from "./autoCompleteInteraction";
 import CommandInteractionWebHook from "./commandInteraction";
@@ -12,6 +12,7 @@ export default class InteractionBaseWebhook extends BaseInteraction {
     message?: APIMessage;
     customId?: string;
     bot: Bot;
+    components: ModalSubmitActionRowComponent[] = [];
     webhook: InteractionWebhook;
     timeCreated: number = Date.now();
     constructor(data: APIInteraction, bot: Bot, res: FastifyReply) {
@@ -26,6 +27,10 @@ export default class InteractionBaseWebhook extends BaseInteraction {
         }
         if(data.data) {
             if(data.type === InteractionType.MessageComponent) {
+                this.customId = data.data.custom_id;
+            }
+            if(data.type === InteractionType.ModalSubmit) {
+                this.components = data.data.components;
                 this.customId = data.data.custom_id;
             }
         }
@@ -84,7 +89,7 @@ export default class InteractionBaseWebhook extends BaseInteraction {
         return this.webhook.deleteMessage("@original");
     }
 
-    async createMessage(options: string | MessagePayload){
+    async createMessage(options: string | MessagePayload | InteractionReplyOptions) {
         return await this.webhook.send(options);
     }
 
@@ -104,21 +109,12 @@ export default class InteractionBaseWebhook extends BaseInteraction {
         });
     }
 
-    awaitModalSubmit(options:Omit<ModalCollectorOptions,"message"> ) {
-        const collector = new ModalCollector(this.bot, options);
+    awaitModalSubmit(options:ModalCollectorOptions ) {
         return new Promise<ModalInteraction>((resolve, reject) => {
-            collector.once("end", (collected, reason) => {
-                if(reason === "time") reject("time");
-                else{
-                    let interaction = collected.first();
-                    if(interaction && interaction.isModalSubmitWebhook()) resolve(interaction);
-                    else reject("time");
-                }
-            });
-
+            const collector = new ModalCollector(this.bot, options);
             collector.once("collect", (interaction) => {
-                if(interaction.isModalSubmitWebhook()) resolve(interaction);
-                else reject("Not a ModalSubmitInteraction");
+                console.log(interaction);
+                resolve(interaction);
             });
         });
     }

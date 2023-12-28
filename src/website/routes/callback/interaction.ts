@@ -95,8 +95,10 @@ export class InteractionCallback extends Route {
                     }
                 }else if(body.type === InteractionType.ModalSubmit){
                     let interaction = new ModalInteraction(body, bot, res);
-                    if(interaction.isModalSubmit()){
+                    if(interaction.isModalSubmitWebhook()){
                         bot.emitCustomInteraction(interaction);
+                    }else{
+                        return res.reply(errorResponse);
                     }
                 }else {
                     return res.reply(errorResponse);

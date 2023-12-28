@@ -24,7 +24,7 @@ export default class ComponentCollector extends Collector<Snowflake,MessageCompo
         this.message = options.message;
         bot.onCustomInteraction(this.handleCollect);
         this.on("end", () => {
-            bot.offCustomInteraction(this.handleCollect);
+            bot.offCustomInteraction(this.handleDispose);
         })
     }
 }
