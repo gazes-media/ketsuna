@@ -1,4 +1,4 @@
-import { APIInteraction, APIInteractionResponse, APIInteractionResponseCallbackData, APIMessage, APIModalComponent, APIModalInteractionResponseCallbackData, AutocompleteInteraction, BaseInteraction, ButtonInteraction, CacheType, Client, Component, InteractionReplyOptions, InteractionResponseType, InteractionType, InteractionWebhook, Message, MessageComponentInteraction, MessagePayload, MessageResolvable, ModalSubmitActionRowComponent, RESTGetAPIWebhookWithTokenMessageResult, Routes, WebhookMessageEditOptions } from "discord.js";
+import { APIInteraction, APIInteractionResponse, APIInteractionResponseCallbackData, APIMessage, APIModalComponent, APIModalInteractionResponseCallbackData, AutocompleteInteraction, BaseInteraction, ButtonInteraction, CacheType, Client, Component, ComponentType, InteractionReplyOptions, InteractionResponseType, InteractionType, InteractionWebhook, Message, MessageComponentInteraction, MessagePayload, MessageResolvable, ModalSubmitActionRowComponent, RESTGetAPIWebhookWithTokenMessageResult, Routes, WebhookMessageEditOptions } from "discord.js";
 import { FastifyReply } from "fastify";
 import AutocompleteInteractionWebHook from "./autoCompleteInteraction";
 import CommandInteractionWebHook from "./commandInteraction";
@@ -14,6 +14,7 @@ export default class InteractionBaseWebhook extends BaseInteraction {
     bot: Bot;
     components: ModalSubmitActionRowComponent[] = [];
     webhook: InteractionWebhook;
+    values?: string[];
     timeCreated: number = Date.now();
     constructor(data: APIInteraction, bot: Bot, res: FastifyReply) {
         let client = bot.application?.client;
@@ -28,6 +29,9 @@ export default class InteractionBaseWebhook extends BaseInteraction {
         if(data.data) {
             if(data.type === InteractionType.MessageComponent) {
                 this.customId = data.data.custom_id;
+                if(data.data.component_type === ComponentType.UserSelect || data.data.component_type === ComponentType.StringSelect || data.data.component_type === ComponentType.ChannelSelect || data.data.component_type === ComponentType.MentionableSelect || data.data.component_type === ComponentType.RoleSelect) {
+                    this.values = data.data.values;
+                }
             }
             if(data.type === InteractionType.ModalSubmit) {
                 this.components = data.data.components;
