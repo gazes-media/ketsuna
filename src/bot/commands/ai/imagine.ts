@@ -1,8 +1,7 @@
-import CommandInteractionWebHook from "../../class/commandInteraction";
 import CommandsBase from "../baseCommands";
-import { APIActionRowComponent, APIButtonComponent, AttachmentPayload, ButtonBuilder, ButtonStyle, CommandInteractionOptionResolver, MessageEditOptions, MessageFlags, TextChannel } from "discord.js";
+import { APIActionRowComponent, APIButtonComponent, AttachmentPayload, ButtonBuilder, ButtonStyle, CommandInteraction, CommandInteractionOptionResolver, MessageEditOptions, MessageFlags, TextChannel } from "discord.js";
 import { ModelGenerationInputPostProcessingTypes, ModelGenerationInputStableSamplers } from "../../../internal_libs/aihorde";
-export default async function Imagine(command: CommandsBase, interaction: CommandInteractionWebHook){
+export default async function Imagine(command: CommandsBase, interaction: CommandInteraction){
     
     let userDatabase = await command.client.database.users.findFirst({
         where: {
@@ -14,7 +13,7 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
     if (userDatabase) {
         defaultToken = command.client.decryptString(userDatabase.horde_token);
     }
-    let timeout = command.client.timeouts.get(interaction.command.commandName);
+    let timeout = command.client.timeouts.get(interaction.commandName);
     if (!timeout) {
         interaction.reply({
             content: "Une erreur est survenue",
@@ -31,11 +30,9 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
     }
 
     // get the option value
-    await interaction.followUp({
-        content: "Génération en cours...",
-    })
+    let message = await interaction.deferReply()
 
-    let options = interaction.command.options
+    let options = interaction.options
     if (options instanceof CommandInteractionOptionResolver) {
         let image = options.getString("prompt") || "";
         let model = options.getString("model") || "Deliberate";
@@ -48,7 +45,7 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                 nsfwchannel = textChannel.nsfw;
             }
             let ai = command.client.aiHorde;
-            command.client.timeouts.get(interaction.command.commandName)?.set(interaction.user.id, true);
+            command.client.timeouts.get(interaction.commandName)?.set(interaction.user.id, true);
             ai.postAsyncImageGenerate({
                 prompt: image + "### " + negative_prompt,
                 params: {
@@ -80,7 +77,7 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
             }).then(async (result) => {
                 let id = result.id as string;
                 let finished = 0;
-                let collector = await interaction.createComponentCollector({
+                let collector = await message.createMessageComponentCollector({
                     filter: (componentInteraction) => {
                         return componentInteraction.customId === "cancel" && componentInteraction.user.id === interaction.user.id;
                     },
@@ -97,7 +94,7 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                                 if (stat.done) {
                                     clearInterval(interval);
                                     collector.stop("done");
-                                    command.client.timeouts.get(interaction.command.commandName)?.delete(interaction.user.id);
+                                    command.client.timeouts.get(interaction.commandName)?.delete(interaction.user.id);
                                     ai.getImageGenerationStatus(id).then((status) => {
                                         let generations = status.generations;
                                         if (generations && generations.length > 0) {
@@ -172,7 +169,7 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                                 }
                             } else {
                                 clearInterval(interval);
-                                command.client.timeouts.get(interaction.command.commandName)?.delete(interaction.user.id);
+                                command.client.timeouts.get(interaction.commandName)?.delete(interaction.user.id);
                                 interaction.editReply({
                                     content: "Impossible de générer l'image, le model demandé n'est pas disponible",
                                     components: []
@@ -185,16 +182,16 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                 collector.on("collect", (componentInteraction) => {
                     collector.stop("cancel");
                     clearInterval(interval);
-                    command.client.timeouts.get(interaction.command.commandName)?.delete(interaction.user.id);
-                    componentInteraction.edit({
+                    command.client.timeouts.get(interaction.commandName)?.delete(interaction.user.id);
+                    componentInteraction.update({
                         content: "Génération annulée",
                         components: []
                     });
                     command.client.aiHorde.deleteImageGenerationRequest(id);
                 });
             }).catch(() => {
-                command.client.timeouts.get(interaction.command.commandName)?.delete(interaction.user.id);
-                if (interaction.command.deferred) {
+                command.client.timeouts.get(interaction.commandName)?.delete(interaction.user.id);
+                if (interaction.deferred) {
                     interaction.editReply({
                         content: "Une erreur est survenue, le contenu demandé est peut-être trop long ou trop complexe, ou la demande est trop non éthique pour être traitée.",
                         components: []

@@ -23,22 +23,50 @@ The Front-end is built with [React](https://reactjs.org/) and [Next.js](https://
 2. Install the dependencies with `pnpm install`
 3. Create a `.env` file in the root directory and fill it with the following variables:
     
-    ```env
+```env
     # The port the server will listen on
     PORT=3000
     # The Discord bot token
     DISCORD_TOKEN=
-    # The Discord bot client public key
-    DISCORD_PUBLIC_KEY=
     # Config the Discord Status
     DISCORD_STATUS_NAME=The best Bot ever
     DISCORD_STATUS_STATE=The Best AI Bot
-    # The AI Horde API key
-    AI_HORDE_KEY=
-    ```
+```
+
 4. Run the database migrations with `pnpm migrate` (this will create the database tables)
 5. Build the project with `pnpm build`
-6. Run the project with `pnpm start` or `node dist/main.js`
+6. Run the project with `pnpm start` or `node dist/main.js` or with pm2 `pm2 start npm --name "your-app-name" -- start`
+
+## Updating
+
+1. Pull the repository with `git pull`
+2. Install the dependencies with `pnpm install`
+3. Run the database migrations with `pnpm migrate`
+4. Build the project with `pnpm build`
+5. Restart the project with `pm2 restart your-app-name`
+
+Or if you don't want to "build" the project : 
+1. Change the branch to `prod` with `git checkout prod`
+2. Same as above but without the `pnpm build` step
+
+## Usage
+
+### Discord bot
+
+The Discord bot is used to communicate with the Discord API. It currently has the following commands:
+/ai imagine `text` `[nsfw]` (Used to determine if it's NSFW or not, don't work outside of NSFW channels) `model` (The model to use, default is `deliberate`) `negative_prompt` (The prompt to filter what you don't want)
+/ia login (Used to login to the AI Horde API, you need to have an account on the [AI Horde](https://stablehorde.net/) website)
+
+### Website
+
+The website is used to interact with the Discord bot. It currently has the following pages:
+/ (The home page)   
+/cgu (The CGU page)
+/tos (The TOS page)
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
 

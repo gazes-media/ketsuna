@@ -1,6 +1,5 @@
 import { FastifyInstance } from "fastify";
 import os from "os";
-import * as routes from "./routes";
 import next from "next";
 import { parse } from 'url';
 
@@ -12,7 +11,6 @@ class Website {
 
     public init() {
         app.prepare().then(() => {
-            this.loadRoutes();
             this.app.get("/api", (req, res) => {
                 let perfs = process.memoryUsage();
                 const formatMemoryUsage = (data: number) => `${Math.round(data / 1024 / 1024 * 100) / 100} MB`;
@@ -59,12 +57,12 @@ class Website {
         });
     }
 
-    public async loadRoutes() {
-        for (const route of Object.values(routes)) {
-            let routeInstance = new route(this.app);
-            console.log(`Registering route ${routeInstance.path}`);
-        }
-    }
+    // public async loadRoutes() {
+    //     for (const route of Object.values(routes)) {
+    //         let routeInstance = new route(this.app);
+    //         console.log(`Registering route ${routeInstance.path}`);
+    //     }
+    // }
 }
 
 export default Website;
