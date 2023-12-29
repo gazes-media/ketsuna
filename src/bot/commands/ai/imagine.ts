@@ -161,10 +161,20 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                                             if (files.length > 0) {
                                                 message.files = files;
                                             }
-                                            interaction.editReply(message);
+                                            interaction.editReply(message).catch(e => { 
+                                                clearInterval(interval);
+                                                collector.stop("cancel");
+                                                command.client.timeouts.get(interaction.commandName)?.delete(interaction.user.id);
+                                                command.client.aiHorde.deleteImageGenerationRequest(id);
+                                            });;
                                         })
                                     } else {
-                                        interaction.editReply(message);
+                                        interaction.editReply(message).catch(e => { 
+                                            clearInterval(interval);
+                                            collector.stop("cancel");
+                                            command.client.timeouts.get(interaction.commandName)?.delete(interaction.user.id);
+                                            command.client.aiHorde.deleteImageGenerationRequest(id);
+                                        });
                                     }
                                 }
                             } else {
@@ -173,7 +183,12 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                                 interaction.editReply({
                                     content: "Impossible de générer l'image, le model demandé n'est pas disponible",
                                     components: []
-                                });
+                                }).catch(e => { 
+                                    clearInterval(interval);
+                                    collector.stop("cancel");
+                                    command.client.timeouts.get(interaction.commandName)?.delete(interaction.user.id);
+                                    command.client.aiHorde.deleteImageGenerationRequest(id);
+                                });;
                             }
                         })
                     }
