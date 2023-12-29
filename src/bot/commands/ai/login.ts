@@ -73,6 +73,7 @@ export default async function Login(command: CommandsBase, interaction: CommandI
             modal.editReply({
                 content: "Token mis à jour",
             });
+            console.log("Token mis à jour");
         }).catch((err) => {
             modal.editReply({
                 content: "Une erreur est survenue",
@@ -85,6 +86,7 @@ export default async function Login(command: CommandsBase, interaction: CommandI
                 horde_token: command.client.encryptString(token)
             }
         }).then(() => {
+            console.log("Token ajouté");
             modal.editReply({
                 content: "Token ajouté",
             });

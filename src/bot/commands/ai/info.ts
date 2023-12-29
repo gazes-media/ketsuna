@@ -2,7 +2,7 @@ import { ActionRowBuilder, CommandInteraction, CommandInteractionOptionResolver,
 import CommandsBase from "../baseCommands";
 
 export default async function Info(command: CommandsBase, interaction: CommandInteraction) {    
-    interaction.deferReply();
+    let i = await interaction.deferReply()
     let options = interaction.options;
     let InteractionUser = interaction.user;
     let notTheCurrentUser = false;
@@ -13,7 +13,8 @@ export default async function Info(command: CommandsBase, interaction: CommandIn
             notTheCurrentUser = true;
         }
     }
-    interaction.editReply({
+
+    i.edit({
         content: "Recherche en cours de l'utilisateur dans la base de donnée",
     });
     let userDatabase = await command.client.database.users.findFirst({
@@ -21,10 +22,10 @@ export default async function Info(command: CommandsBase, interaction: CommandIn
             id: InteractionUser.id
         }
     });
-    if (!userDatabase) return interaction.editReply({
+    if (!userDatabase) return i.edit({
         content: notTheCurrentUser ? "L'utilisateur n'est pas enregistré" : "Vous n'êtes pas enregistré" + `, ${notTheCurrentUser ? "il doit s'" : "vous devez vous"} enregistrer avec la commande </${interaction.commandName} login:${interaction.commandId}>`,
     });
-    interaction.editReply({
+    i.edit({
         content: "Recherche en cours de l'utilisateur dans l'API",
     });
     let token = command.client.decryptString(userDatabase.horde_token);
@@ -33,7 +34,7 @@ export default async function Info(command: CommandsBase, interaction: CommandIn
         let user = await ai.findUser({
             token
         });
-        interaction.editReply({
+        i.edit({
             content:"",
             embeds: [
                 new EmbedBuilder()
@@ -60,7 +61,7 @@ export default async function Info(command: CommandsBase, interaction: CommandIn
             ]
         });
     } catch (e) {
-        return interaction.editReply({
+        return i.edit({
             content: "Le token est invalide vous devez vous reconnecter",
         });
     }
