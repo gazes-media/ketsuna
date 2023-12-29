@@ -30,9 +30,7 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
     }
 
     // get the option value
-    let message = await interaction.followUp({
-        content: "Génération en cours...",
-    })
+    let message = await interaction.deferReply()
 
     let options = interaction.options
     if (options instanceof CommandInteractionOptionResolver) {

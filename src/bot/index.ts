@@ -62,6 +62,11 @@ export default class Bot extends Client {
         if(command){
           command.run(interaction);
         }
+      }else if(interaction.isAutocomplete()){
+        let command = this.commands.get(interaction.commandName);
+        if(command && command.autocomplete){
+          command.autocomplete(interaction);
+        }
       }
     });
   }

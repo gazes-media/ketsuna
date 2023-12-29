@@ -1,7 +1,7 @@
 import { ActionRowBuilder, CommandInteraction, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import CommandsBase from "../baseCommands";
 
-export default async function Login(command: CommandsBase, interaction: CommandInteraction){
+export default async function Login(command: CommandsBase, interaction: CommandInteraction) {
     let userDatabase = await command.client.database.users.findFirst({
         where: {
             id: interaction.user.id
@@ -40,16 +40,15 @@ export default async function Login(command: CommandsBase, interaction: CommandI
 
     let token = command.client.getModalValue("token", modal);
     if (!token) {
-    modal.reply({
-        content: "Vous devez entrer un token",
-        flags: MessageFlags.Ephemeral
-    });
-    return;
-}
-    modal.followUp({
-        content: "Vérification du token...",
-        flags: MessageFlags.Ephemeral
-    });
+        modal.reply({
+            content: "Vous devez entrer un token",
+            flags: MessageFlags.Ephemeral
+        });
+        return;
+    }
+    
+    if (modal.deferred) return;
+    modal.deferReply();
     let ai = command.client.aiHorde;
     try {
         let user = await ai.findUser({

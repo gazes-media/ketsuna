@@ -78,7 +78,7 @@ export class IaCommand extends CommandsBase {
     }
 
     async autocomplete(interaction: AutocompleteInteraction): Promise<void> {
-        let options = interaction.command.options;
+        let options = interaction.options;
         if (options instanceof CommandInteractionOptionResolver) {
             let modelName = options.getFocused(true);
             if (modelName.name === "model") {
