@@ -1,8 +1,7 @@
-import { ActionRowBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
-import CommandInteractionWebHook from "../../class/commandInteraction";
+import { ActionRowBuilder, CommandInteraction, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import CommandsBase from "../baseCommands";
 
-export default async function Login(command: CommandsBase, interaction: CommandInteractionWebHook){
+export default async function Login(command: CommandsBase, interaction: CommandInteraction){
     let userDatabase = await command.client.database.users.findFirst({
         where: {
             id: interaction.user.id
@@ -39,7 +38,7 @@ export default async function Login(command: CommandsBase, interaction: CommandI
         dispose: true,
     })
 
-    let token = modal.getValue("token");
+    let token = command.client.getModalValue("token", modal);
     if (!token) {
     modal.reply({
         content: "Vous devez entrer un token",

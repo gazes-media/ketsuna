@@ -1,9 +1,7 @@
-import { ActivityType, Awaitable, Client, Events, GatewayIntentBits, Partials } from "discord.js";
+import { ActivityType, Client, Events, GatewayIntentBits, ModalSubmitInteraction, Partials } from "discord.js";
 import AIHorde from "../internal_libs/aihorde";
 import * as commandList from "./list.commands";
 import CommandsBase from "./commands/baseCommands";
-import ComponentCollector from "./class/ComponentCollector";
-import InteractionBaseWebhook from "./class/interaction";
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 export default class Bot extends Client {
@@ -57,6 +55,15 @@ export default class Bot extends Client {
         });
       }, 1000 * 5);
     });
+
+    this.on(Events.InteractionCreate, async (interaction) => {
+      if(interaction.isCommand()){
+        let command = this.commands.get(interaction.commandName);
+        if(command){
+          command.run(interaction);
+        }
+      }
+    });
   }
 
   public loadCommands() {
@@ -65,18 +72,6 @@ export default class Bot extends Client {
       this.commands.set(cmd.name, cmd);
       this.timeouts.set(cmd.name, new Map<string, boolean>());
     }
-  }
-
-  emitCustomInteraction(data: InteractionBaseWebhook) {
-    return this.emit("customInteraction", data);
-  }
-
-  onCustomInteraction(listener: (data: InteractionBaseWebhook) => Awaitable<void>) {
-    return this.on("customInteraction", listener);
-  }
-
-  offCustomInteraction(listener: (data: InteractionBaseWebhook) => Awaitable<void>) {
-    return this.off("customInteraction", listener);
   }
 
 
@@ -97,6 +92,22 @@ export default class Bot extends Client {
 		const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
 		return encrypted.toString('hex') + ":" + iv.toString('hex');
 	};
+
+  getModalValue(key: string, modal: ModalSubmitInteraction){
+    let component = modal.components.find((component) => {
+      return component.components.find((subComponent) => {
+        return subComponent.customId === key;
+      });
+    })
+    if(!component) return undefined;
+    let subComponent = component.components.find((subComponent) => {
+      return subComponent.customId === key;
+    });
+    if(!subComponent) return undefined;
+    let value = subComponent.value;
+    if(!value) return undefined;
+    return value;
+  }
 
 }
 

@@ -1,8 +1,6 @@
-import { ApplicationCommandOptionChoiceData, CommandInteractionOptionResolver, MessageFlags, SlashCommandBuilder } from "discord.js";
+import { ApplicationCommandOptionChoiceData, AutocompleteInteraction, CommandInteraction, CommandInteractionOptionResolver, MessageFlags, SlashCommandBuilder } from "discord.js";
 import Bot from "../index";
 import CommandsBase from "./baseCommands";
-import CommandInteractionWebHook from "../class/commandInteraction";
-import AutocompleteInteractionWebHook from "../class/autoCompleteInteraction";
 import Login from "./ai/login";
 import Imagine from "./ai/imagine";
 
@@ -53,7 +51,7 @@ export class IaCommand extends CommandsBase {
         super(client, commandData);
     }
 
-    async run(interaction: CommandInteractionWebHook): Promise<void> {
+    async run(interaction: CommandInteraction): Promise<void> {
         let options = interaction.options
         if (options instanceof CommandInteractionOptionResolver) {
             let subcommand = options.getSubcommand(true);
@@ -79,7 +77,7 @@ export class IaCommand extends CommandsBase {
         }
     }
 
-    async autocomplete(interaction: AutocompleteInteractionWebHook): Promise<void> {
+    async autocomplete(interaction: AutocompleteInteraction): Promise<void> {
         let options = interaction.command.options;
         if (options instanceof CommandInteractionOptionResolver) {
             let modelName = options.getFocused(true);
@@ -100,9 +98,7 @@ export class IaCommand extends CommandsBase {
                             value: model.name as string
                         }
                     })
-                    interaction.respond({
-                        choices: optionsMapped
-                    });
+                    interaction.respond(optionsMapped);
                 });
             }
         }

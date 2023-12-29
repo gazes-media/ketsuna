@@ -1,13 +1,11 @@
-import { ApplicationCommandData, ApplicationCommandDataResolvable, RESTPostAPIApplicationCommandsJSONBody, SlashCommandBuilder } from "discord.js";
+import { AutocompleteInteraction, CommandInteraction, RESTPostAPIApplicationCommandsJSONBody } from "discord.js";
 import Bot from "../index";
-import CommandInteractionWebHook from "../class/commandInteraction";
-import AutocompleteInteractionWebHook from "../class/autoCompleteInteraction";
 
 type Commande = RESTPostAPIApplicationCommandsJSONBody;
 export default abstract class CommandsBase {
     name: string;
     client: Bot;
-    autocomplete?(interaction: AutocompleteInteractionWebHook): Promise<void>
+    autocomplete?(interaction: AutocompleteInteraction): Promise<void>
     constructor(client: Bot, data: Commande, guildId?: string) {
         if (guildId) {
             client.application?.commands.create(data, guildId).then((cmd) => {
@@ -29,5 +27,5 @@ export default abstract class CommandsBase {
         this.client = client;
     }
 
-    abstract run(interaction: CommandInteractionWebHook): Promise<void>;
+    abstract run(interaction: CommandInteraction): Promise<void>;
 }
