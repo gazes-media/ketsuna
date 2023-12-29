@@ -40,23 +40,21 @@ export default async function Login(command: CommandsBase, interaction: CommandI
 
     let token = command.client.getModalValue("token", modal);
     if (!token) {
-        modal.reply({
+        return modal.reply({
             content: "Vous devez entrer un token",
             flags: MessageFlags.Ephemeral
         });
-        return;
     }
     
     if (modal.deferred) return;
-    modal.deferReply();
+    let modalInteraction = await modal.deferReply();
     let ai = command.client.aiHorde;
     try {
         let user = await ai.findUser({
             token
         });
-        console.log(`${user.username}, as ${user.kudos} kudos`);
     } catch (e) {
-        modal.editReply({
+        modalInteraction.edit({
             content: "Le token est invalide",
         });
         return;
@@ -70,12 +68,11 @@ export default async function Login(command: CommandsBase, interaction: CommandI
                 horde_token: command.client.encryptString(token)
             }
         }).then(() => {
-            modal.editReply({
+            modalInteraction.edit({
                 content: "Token mis à jour",
             });
-            console.log("Token mis à jour");
         }).catch((err) => {
-            modal.editReply({
+            modalInteraction.edit({
                 content: "Une erreur est survenue",
             });
         });
@@ -86,12 +83,11 @@ export default async function Login(command: CommandsBase, interaction: CommandI
                 horde_token: command.client.encryptString(token)
             }
         }).then(() => {
-            console.log("Token ajouté");
-            modal.editReply({
+            modalInteraction.edit({
                 content: "Token ajouté",
             });
         }).catch((err) => {
-            modal.editReply({
+            modalInteraction.edit({
                 content: "Une erreur est survenue",
             });
         });
