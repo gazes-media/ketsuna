@@ -3,6 +3,8 @@ import Bot from "../index";
 import CommandsBase from "./baseCommands";
 import Login from "./ai/login";
 import Imagine from "./ai/imagine";
+import Help from "./ai/help";
+import Info from "./ai/info";
 
 
 const commandData = new SlashCommandBuilder()
@@ -10,7 +12,12 @@ const commandData = new SlashCommandBuilder()
     .setDescription("Commandes IA")
     .addSubcommand(subcommand => subcommand
         .setName("imagine")
-        .setDescription("Ecrivez une image à créer")
+        .setDescription("Créer une image par IA")
+        .setDescriptionLocalizations({
+            fr: "Créer une image par IA",
+            "en-GB": "Create an image by AI",
+            "en-US": "Create an image by AI"
+        })
         .addStringOption(option => option.setName("prompt").setDescription("L'image à créer").setRequired(true).setDescriptionLocalizations({
             fr: "L'image à créer",
             "en-GB": "The image to create",
@@ -43,6 +50,34 @@ const commandData = new SlashCommandBuilder()
     .addSubcommand(subcommand => subcommand
         .setName("login")
         .setDescription("Se connecter à l'IA Horde")
+        .setDescriptionLocalizations({
+            fr: "Se connecter à l'IA Horde",
+            "en-GB": "Connect to AI Horde",
+            "en-US": "Connect to AI Horde"
+        })
+    )
+    .addSubcommand(subcommand => subcommand
+        .setName("help")
+        .setDescription("Afficher l'aide")
+        .setDescriptionLocalizations({
+            fr: "Afficher l'aide",
+            "en-GB": "Show help",
+            "en-US": "Show help"
+        })
+    )
+    .addSubcommand(subcommand => subcommand
+        .setName("info")
+        .setDescription("Afficher les informations d'un utilisateur")
+        .setDescriptionLocalizations({
+            fr: "Afficher les informations d'un utilisateur",
+            "en-GB": "Show user informations",
+            "en-US": "Show user informations"
+        })
+        .addUserOption(option => option.setName("user").setDescription("L'utilisateur").setRequired(false).setDescriptionLocalizations({
+            fr: "L'utilisateur",
+            "en-GB": "The user",
+            "en-US": "The user"
+        }))
     )
     .toJSON();
 
@@ -61,6 +96,12 @@ export class IaCommand extends CommandsBase {
                     break;
                 case "login":
                     await Login(this, interaction);
+                    break;
+                case "help":
+                    await Help(this, interaction);
+                    break;
+                case "info":
+                    await Info(this, interaction);
                     break;
                 default:
                     interaction.reply({
