@@ -1,7 +1,8 @@
 import { ActionRowBuilder, CommandInteraction, CommandInteractionOptionResolver, EmbedBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import CommandsBase from "../baseCommands";
 
-export default async function Info(command: CommandsBase, interaction: CommandInteraction) {
+export default async function Info(command: CommandsBase, interaction: CommandInteraction) {    
+    interaction.deferReply();
     let options = interaction.options;
     let InteractionUser = interaction.user;
     let notTheCurrentUser = false;
@@ -12,24 +13,28 @@ export default async function Info(command: CommandsBase, interaction: CommandIn
             notTheCurrentUser = true;
         }
     }
-
+    interaction.editReply({
+        content: "Recherche en cours de l'utilisateur dans la base de donnée",
+    });
     let userDatabase = await command.client.database.users.findFirst({
         where: {
             id: InteractionUser.id
         }
     });
-    if (!userDatabase) return interaction.reply({
+    if (!userDatabase) return interaction.editReply({
         content: notTheCurrentUser ? "L'utilisateur n'est pas enregistré" : "Vous n'êtes pas enregistré" + `, ${notTheCurrentUser ? "il doit s'" : "vous devez vous"} enregistrer avec la commande </${interaction.commandName} login:${interaction.commandId}>`,
-        flags: MessageFlags.Ephemeral
+    });
+    interaction.editReply({
+        content: "Recherche en cours de l'utilisateur dans l'API",
     });
     let token = command.client.decryptString(userDatabase.horde_token);
-    interaction.deferReply();
     let ai = command.client.aiHorde;
     try {
         let user = await ai.findUser({
             token
         });
         interaction.editReply({
+            content:"",
             embeds: [
                 new EmbedBuilder()
                     .setTitle(`Info de ${user.username}`)
