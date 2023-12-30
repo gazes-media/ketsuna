@@ -1,3 +1,4 @@
+"use client";
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -21,8 +22,8 @@ const pages = [{
     name: 'CGU',
     href: '/cgu'
 },{
-    name: 'TOS',
-    href: '/tos'
+    name: 'Privacy Policy',
+    href: '/privacy'
 }];
 const settings = ['In Progress'];
 

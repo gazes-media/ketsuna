@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import React from "react";
 export default function LinkComponent({ to, props, children }: { to: string, props?: any, children: React.ReactNode }) {

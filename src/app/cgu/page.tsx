@@ -1,14 +1,15 @@
-import NextHead from 'next/head'
-import Theme from '../components/theme';
-import ButtonAppBar from '../components/Appbar';
+import type { Metadata } from 'next';
+import ButtonAppBar from '../../components/Appbar';
 import { Container } from '@mui/material';
 
-export default function Home() {
+export const metadata: Metadata = {
+    title: "Politique de confidentialité",
+    description: "Politique de confidentialité du bot Discord Ketsuna",
+}
+
+export default function Page() {
     return (
-        <Theme>
-            <NextHead>
-                <title>Politique de confidentialité du bot Discord Ketsuna</title>
-            </NextHead>
+        <div>
             <ButtonAppBar />
             <Container maxWidth="md">
                 <p>
@@ -40,6 +41,6 @@ export default function Home() {
                 </p>
                 <p>Version actuelle de la politique de confidentialité : 28/07/2023</p>
             </Container>
-        </Theme>
+        </div>
     );
 }

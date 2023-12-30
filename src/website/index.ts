@@ -40,7 +40,7 @@ class Website {
                 res.status(200).header('Content-Type', 'application/json; charset=utf-8').send({ status: "ok" });
             });
 
-            this.app.get('*', (req, res) => {
+            this.app.all('*', (req, res) => {
                 const parsedUrl = parse(req.url, true);
                 handle(req.raw, res.raw, parsedUrl);
             });

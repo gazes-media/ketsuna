@@ -1,14 +1,15 @@
-import NextHead from 'next/head'
-import Theme from '../components/theme';
-import ButtonAppBar from '../components/Appbar';
+import type { Metadata } from 'next';
+import ButtonAppBar from '../../components/Appbar';
 import { Container } from '@mui/material';
+
+export const metadata: Metadata = {
+    title: "Conditions Générales d'Utilisation",
+    description: "Conditions Générales d'Utilisation du bot Discord Ketsuna",
+}
 
 export default function Home() {
     return (
-        <Theme>
-            <NextHead>
-                <title>Conditions d'utilisation du bot Discord Ketsuna</title>
-            </NextHead>
+        <div>
             <ButtonAppBar />
             <Container maxWidth="md">
                 <ol>
@@ -35,6 +36,6 @@ export default function Home() {
                 <p>En utilisant Ketsuna, vous confirmez que vous avez lu et compris ces conditions d'utilisation et que vous vous engagez à les respecter.</p>
                 <p>Date d'entrée en vigueur des conditions d'utilisation : 28/07/2023</p>
             </Container>
-        </Theme>
+        </div>
     );
 }
