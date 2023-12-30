@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import CommandsAccordeon from "./CommandComponent";
 import type { APIApplicationCommand, APIUser } from "discord.js";
 import ResponsiveAppBar from "../../components/Appbar";
+import { headers } from 'next/headers'
+
 
 export const metadata: Metadata = {
     title: "Commandes",
@@ -32,6 +34,8 @@ async function getData() {
 
 export default async function Page() {
     let datas = await getData()
+    let heads = headers()
+    heads.get('Cache-Control')
     return (
         <div>
             <ResponsiveAppBar />
