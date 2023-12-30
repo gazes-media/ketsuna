@@ -1,7 +1,7 @@
-import { Head } from "next/document"
 import React from "react"
 import Theme from "../components/theme"
 import type { Metadata } from 'next'
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter'
 
 export const metadata: Metadata = {
   title: {
@@ -30,9 +30,11 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body>
+      <AppRouterCacheProvider options={{ enableCssLayer: true }}>
         <Theme>
           {children}
         </Theme>
+      </AppRouterCacheProvider>
       </body>
     </html>
   )

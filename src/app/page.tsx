@@ -1,3 +1,4 @@
+"use client";
 import ResponsiveAppBar from '../components/Appbar'
 import { Link } from '@mui/material';
 

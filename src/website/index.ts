@@ -4,7 +4,7 @@ import next from "next";
 import { parse } from 'url';
 
 const dev = process.env.NODE_ENV !== 'production';
-const app = next({ dev });
+const app = next({ dev, customServer: true });
 const handle = app.getRequestHandler();
 class Website {
     constructor(private app: FastifyInstance) { }
