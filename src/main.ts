@@ -24,4 +24,3 @@ prisma.$connect().then(() => {
 bot.database = prisma;
 bot.init();
 website.init();
-

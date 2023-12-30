@@ -1,15 +1,17 @@
-import { AutocompleteInteraction, CommandInteraction, RESTPostAPIApplicationCommandsJSONBody } from "discord.js";
+import { ApplicationCommand, AutocompleteInteraction, CommandInteraction, RESTPostAPIApplicationCommandsJSONBody } from "discord.js";
 import Bot from "../index";
 
 type Commande = RESTPostAPIApplicationCommandsJSONBody;
 export default abstract class CommandsBase {
     name: string;
     client: Bot;
+    command: ApplicationCommand;
     autocomplete?(interaction: AutocompleteInteraction): Promise<void>
     constructor(client: Bot, data: Commande, guildId?: string) {
         if (guildId) {
             client.application?.commands.create(data, guildId).then((cmd) => {
                 console.log(`[command] ${data.name} created`);	
+                this.command = cmd;
             }).catch((err) => {
                 console.log(`[command] ${data.name} not created`);
                 console.log(err);
@@ -17,6 +19,7 @@ export default abstract class CommandsBase {
         } else {
             client.application?.commands.create(data).then((cmd) => {
                 console.log(`[command] ${data.name} created`);
+                this.command = cmd;
             }).catch((err) => {
                 console.log(`[command] ${data.name} not created`);
                 console.log(err);
