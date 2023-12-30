@@ -11,7 +11,7 @@ export const metadata: Metadata = {
         description: "Liste des commandes du bot Discord Ketsuna",
     },
 };
-
+export const revalidate = 3600 // revalidate at most every hour
 async function getData() {
         // get Current Application ID
         let userRes = await fetch("https://discord.com/api/v10/users/@me", {
