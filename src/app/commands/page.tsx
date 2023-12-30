@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 };
 export const revalidate = 3600 // revalidate at most every hour
 async function getData() {
+        if(!process.env.DISCORD_TOKEN) return [];
         // get Current Application ID
         let userRes = await fetch("https://discord.com/api/v10/users/@me", {
             headers: {
