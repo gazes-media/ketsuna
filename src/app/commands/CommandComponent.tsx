@@ -1,6 +1,7 @@
 "use client";
 
-import { Accordion, AccordionDetails, AccordionSummary, Card, CardContent, CardHeader, Chip, Container, Divider, List, ListItem, ListSubheader, Typography } from "@mui/material";
+import { ExpandMore, Numbers} from "@mui/icons-material";
+import { Accordion, AccordionDetails, AccordionSummary, Chip, Container, Divider, List, ListItem, ListSubheader, Typography } from "@mui/material";
 import type { APIApplicationCommand, APIApplicationCommandSubcommandGroupOption, APIApplicationCommandSubcommandOption } from "discord.js";
 import React from "react";
 
@@ -18,9 +19,9 @@ export default function Commands({ commands }: { commands: APIApplicationCommand
 export function CommandComponent({ command }: { command: APIApplicationCommand }) {
     return (
         <Accordion>
-            <AccordionSummary>
+            <AccordionSummary expandIcon={<ExpandMore />}>
                 <Typography fontSize={20} sx={{ fontWeight: 'bold', fontSize: '1.2rem', width: "50%" }}>
-                    /{command.name}
+                    <Numbers /> /{command.name}
                 </Typography>
                 <Typography sx={{ color: 'text.secondary' }}>{command.description}</Typography>
             </AccordionSummary>
