@@ -20,7 +20,7 @@ export function CommandComponent({ command }: { command: APIApplicationCommand }
         <Accordion>
             <AccordionSummary>
                 <Typography fontSize={20} sx={{ fontWeight: 'bold', fontSize: '1.2rem', width: "50%" }}>
-                    {command.name}
+                    /{command.name}
                 </Typography>
                 <Typography sx={{ color: 'text.secondary' }}>{command.description}</Typography>
             </AccordionSummary>
