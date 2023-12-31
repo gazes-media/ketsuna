@@ -81,8 +81,7 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                     filter: (componentInteraction) => {
                         return componentInteraction.customId === "cancel" && componentInteraction.user.id === interaction.user.id;
                     },
-                    time: 1000 * 60 * 10,
-                    dispose: true,
+                    max: 1,
                 });
                 let interval: NodeJS.Timeout = setInterval(() => {
                     if (id) {

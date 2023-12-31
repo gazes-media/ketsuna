@@ -5,6 +5,8 @@ import Login from "./ai/login";
 import Imagine from "./ai/imagine";
 import Help from "./ai/help";
 import Info from "./ai/info";
+import Ask from "./ai/ask";
+import Logout from "./ai/logout";
 
 
 const commandData = new SlashCommandBuilder()
@@ -18,7 +20,7 @@ const commandData = new SlashCommandBuilder()
             "en-GB": "Create an image by AI",
             "en-US": "Create an image by AI"
         })
-        .addStringOption(option => option.setName("prompt").setDescription("L'image à créer").setRequired(true).setDescriptionLocalizations({
+        .addStringOption(option => option.setName("prompt").setDescription("Une description de l'image à créer").setRequired(true).setDescriptionLocalizations({
             fr: "Une description de l'image à créer",
             "en-GB": "A description of the image to create",
             "en-US": "A description of the image to create"
@@ -79,6 +81,44 @@ const commandData = new SlashCommandBuilder()
             "en-US": "The user"
         }))
     )
+    .addSubcommand(subcommand => subcommand
+        .setName("logout")
+        .setDescription("Se déconnecter de stablehorde.net")
+        .setDescriptionLocalizations({
+            fr: "Se déconnecter de stablehorde.net",
+            "en-GB": "Logout to stablehorde.net",
+            "en-US": "Logout to stablehorde.net"
+        })
+    )
+    .addSubcommand(subcommand => subcommand
+        .setName("ask")
+        .setDescription("Poser une question à l'IA")
+        .setDescriptionLocalizations({
+            fr: "Poser une question à l'IA",
+            "en-GB": "Ask a question to the AI",
+            "en-US": "Ask a question to the AI"
+        })
+        .addStringOption(option => option.setName("question").setDescription("La question à poser").setRequired(true).setDescriptionLocalizations({
+            fr: "La question à poser",
+            "en-GB": "The question to ask",
+            "en-US": "The question to ask"
+        }).setMaxLength(1024))
+        .addNumberOption(option => option.setName("temperature").setDescription("La température de la réponse").setRequired(false).setDescriptionLocalizations({
+            fr: "La température de la réponse",
+            "en-GB": "The temperature of the answer",
+            "en-US": "The temperature of the answer"
+        }))
+        .addNumberOption(option => option.setName("top-p").setDescription("La probabilité de la réponse").setRequired(false).setDescriptionLocalizations({
+            fr: "La probabilité de la réponse",
+            "en-GB": "The probability of the answer",
+            "en-US": "The probability of the answer"
+        }))
+        .addNumberOption(option => option.setName("frequency-penalty").setDescription("La pénalité de fréquence").setRequired(false).setDescriptionLocalizations({
+            fr: "La pénalité de fréquence",
+            "en-GB": "The frequency penalty",
+            "en-US": "The frequency penalty"
+        }))
+    )
     .toJSON();
 
 export class IaCommand extends CommandsBase {
@@ -102,6 +142,12 @@ export class IaCommand extends CommandsBase {
                     break;
                 case "info":
                     await Info(this, interaction);
+                    break;
+                case "logout":
+                    await Logout(this, interaction);
+                    break;
+                case "ask":
+                    await Ask(this, interaction);
                     break;
                 default:
                     interaction.reply({
