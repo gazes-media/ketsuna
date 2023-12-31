@@ -1,8 +1,7 @@
 "use client";
 
-import { ExpandMore, Numbers} from "@mui/icons-material";
-import { Accordion, AccordionDetails, AccordionSummary, Chip, Container, Divider, List, ListItem, ListSubheader, Typography } from "@mui/material";
-import type { APIApplicationCommand, APIApplicationCommandSubcommandGroupOption, APIApplicationCommandSubcommandOption } from "discord.js";
+import { Card, CardContent, CardHeader, Container, Divider, List, ListItem, ListSubheader, Typography } from "@mui/material";
+import { ApplicationCommandType, type APIApplicationCommand, type APIApplicationCommandSubcommandGroupOption, type APIApplicationCommandSubcommandOption, ApplicationCommandOptionType } from "discord.js";
 import React from "react";
 
 
@@ -12,97 +11,137 @@ export default function Commands({ commands }: { commands: APIApplicationCommand
             {commands.map((command) => (
                 <CommandComponent command={command} key={command.id} />
             ))}
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="h5" gutterBottom>
+                Définitions des options de commandes
+            </Typography>
+            <div style={{ marginLeft: "1rem", marginBottom: "1rem", display: "flex", flexDirection: "row" }}>
+                <Typography color={"red"} variant="body1" gutterBottom style={{
+                    marginRight: "0.5rem",
+                }}>*</Typography> Option requise
+            </div>
         </Container>
     );
 }
 
 export function CommandComponent({ command }: { command: APIApplicationCommand }) {
-    return (
-        <Accordion>
-            <AccordionSummary expandIcon={<ExpandMore />}>
-                <Typography fontSize={20} sx={{ fontWeight: 'bold', fontSize: '1.2rem', width: "50%" }}>
-                    <Numbers /> /{command.name}
-                </Typography>
-                <Typography sx={{ color: 'text.secondary' }}>{command.description}</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-                <List>
-                    {command.options && command.options.map((option, index) => (
-                        <div>
-                            <Option name={option.name} description={option.description}>
-                                {option.type === 1 ?
-                                    <SubCommand subcommand={option} />
-                                    : option.type === 2
-                                        ? <SubCommandGroup subcommandgroup={option} /> : (
-                                            <Chip size="small" label={option.required ? "Requis" : "Optionnel"} color={option.required ? "error" : "success"} />
-                                        )}
-                            </Option>
-                            <Divider />
-                        </div>
-                    ))}
-                </List>
-            </AccordionDetails>
-        </Accordion>
-    );
-}
-
-function SubCommand({ subcommand }: { subcommand: APIApplicationCommandSubcommandOption }) {
-    return (
-        <ListItem>
-            {subcommand.options && (
-            <List>
-                <ListSubheader sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
-                    Options de {subcommand.name}
-                </ListSubheader>
-                {subcommand.options && subcommand.options.map((suboption, index) => (
-                    <ListItem key={index}>
-                        <div>
-                            <Typography sx={{ fontWeight: 'bold', fontSize: '0.8rem' }}>
-                                {suboption.name}
-                            </Typography>
-                            <Typography sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
-                                {suboption.description} - <Chip size="small" label={suboption.required ? "Requis" : "Optionnel"} color={suboption.required ? "error" : "success"} />
-                            </Typography>
-                        </div>
-                        
-                    </ListItem>
-                ))}
-            </List>
-            )}
-        </ListItem>
-    );
-}
-
-function SubCommandGroup({ subcommandgroup }: { subcommandgroup: APIApplicationCommandSubcommandGroupOption }) {
-    return (
+    return command.options ? command.options[0].type === 1 ? (
         <div>
-            {subcommandgroup.options && subcommandgroup.options.map((suboption, index) => (
-                <ListItem key={index}>
-                    <div>
-                        <Typography sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
-                            {suboption.name}
-                        </Typography>
-                        <Typography sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
-                            {suboption.description}
-                        </Typography>
-                    </div>
-                    <SubCommand subcommand={suboption} />
-                </ListItem>
+            {command.options.map((option) => (
+                option.type === 1 ? <SubComponentCard subcommand={option} baseCommand={command.name} /> : <div></div>
             ))}
         </div>
+    ) : (
+        <div>
+            {command.options.map((option) => (
+                option.type === 2 && option.options && option.options[0].type === 1 ? option.options.map((suboption) => (
+                    <SubGroupComponentCard subcommand={suboption} baseCommand={command.name} baseGroup={option.name} />
+                )) : <div></div>
+            ))}
+        </div>
+    ) : (
+       <CommandComponentCard command={command} />
     );
 }
 
-function Option({ name, description, children }: { name: string, description: string, children: React.ReactNode }) {
+function SubComponentCard({ subcommand, baseCommand}: { subcommand: APIApplicationCommandSubcommandOption, baseCommand: string }) {
     return (
-        <div>
-            <Typography sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-                {name}
+        <Card style={{ backgroundColor:"#111827", borderRadius: 20, padding:20, marginBottom:20 }}>
+            <div style={{ marginLeft: "1rem" }}>
+            <Typography variant="h5" gutterBottom>
+                /{baseCommand} {subcommand.name} {subcommand.options?.map((suboption) => (
+                    <code style={{
+                        backgroundColor: "#09090b",
+                        marginLeft: "0.5rem",
+                    }}>{suboption.name}</code> 
+                ))}
             </Typography>
-            <Typography sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
-                {description}
+            <Typography variant="body1" gutterBottom>
+                {subcommand.description}
             </Typography>
-            {children}
-        </div>
-    );
+            <div style={{ marginLeft: "1rem" }}>
+                    {subcommand.options?.map((suboption, index) => (
+                            <div style={{
+                                display: "flex",
+                                flexDirection: "row",
+                            }} key={index}><code style={{
+                                backgroundColor: "#09090b",
+                                marginRight: "0.5rem",
+                            }}>{suboption.name}</code> {suboption.required && <Typography color="red" style={{
+                                marginRight: "0.5rem",
+                            }}> * </Typography>}{suboption.description}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </Card>
+    )
+}
+
+function SubGroupComponentCard({ subcommand, baseCommand, baseGroup }: { subcommand: APIApplicationCommandSubcommandOption, baseCommand: string, baseGroup: string }) {
+    return (
+        <Card style={{ backgroundColor:"#111827", borderRadius: 20, padding:20, marginBottom:20 }}>
+            <div style={{ marginLeft: "1rem" }}>
+            <Typography variant="h5" gutterBottom>
+                /{baseCommand} {baseGroup} {subcommand.name} {subcommand.options?.map((suboption) => (
+                    <code style={{
+                        backgroundColor: "#0a0a0a",
+                        marginLeft: "0.5rem",
+                    }}>{suboption.name}</code> 
+                ))}
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+                {subcommand.description}
+            </Typography>
+            <div style={{ marginLeft: "1rem" }}>
+                    {subcommand.options?.map((suboption, index) => (
+                             <div style={{
+                                display: "flex",
+                                flexDirection: "row",
+                            }} key={index}><code style={{
+                                backgroundColor: "#09090b",
+                                marginRight: "0.5rem",
+                            }}>{suboption.name}</code> {suboption.required && <Typography color="red" style={{
+                                marginRight: "0.5rem",
+                            }}> * </Typography>}{suboption.description}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </Card>
+    )
+}
+
+function CommandComponentCard({ command }: { command: APIApplicationCommand }) {
+    return (
+        <Card style={{ backgroundColor:"#111827", borderRadius: 20, padding:20, marginBottom:20 }}>
+            <div style={{ marginLeft: "1rem" }}>
+            <Typography variant="h5" gutterBottom>
+                /{command.name} {command.options?.map((option) => (
+                    <code style={{
+                        backgroundColor: "#0a0a0a",
+                        marginLeft: "0.5rem",
+                    }}>{option.name}</code> 
+                ))}
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+                {command.description}
+            </Typography>
+            <div style={{ marginLeft: "1rem" }}>
+                    {command.options?.map((suboption, index) => (
+                            <div style={{
+                                display: "flex",
+                                flexDirection: "row",
+                            }} key={index}><code style={{
+                                backgroundColor: "#09090b",
+                                marginRight: "0.5rem",
+                            }}>{suboption.name}</code> {suboption.required && <Typography color="red" style={{
+                                marginRight: "0.5rem",
+                            }}> * </Typography>}{suboption.description}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </Card>
+    )
 }

@@ -19,50 +19,50 @@ const commandData = new SlashCommandBuilder()
             "en-US": "Create an image by AI"
         })
         .addStringOption(option => option.setName("prompt").setDescription("L'image à créer").setRequired(true).setDescriptionLocalizations({
-            fr: "L'image à créer",
-            "en-GB": "The image to create",
-            "en-US": "The image to create"
+            fr: "Une description de l'image à créer",
+            "en-GB": "A description of the image to create",
+            "en-US": "A description of the image to create"
         }).setNameLocalizations({
-            fr: "image",
-            "en-GB": "image",
-            "en-US": "image"
+            fr: "prompt",
+            "en-GB": "prompt",
+            "en-US": "prompt"
         }).setMaxLength(1000))
         .addBooleanOption(option => option.setName("nsfw").setDescription("Activer le NSFW").setRequired(false).setDescriptionLocalizations({
             fr: "Activer le NSFW",
             "en-GB": "Enable NSFW",
             "en-US": "Enable NSFW"
         }))
-        .addStringOption(option => option.setName("negative_prompt").setDescription("Ce que l'image ne doit pas être").setRequired(false).setNameLocalizations({
+        .addStringOption(option => option.setName("negative_prompt").setDescription("Decrire ce que l'image ne doit pas être").setRequired(false).setNameLocalizations({
             fr: "prompt_negatif"
         }).setDescriptionLocalizations({
-            fr: "Ce que l'image ne doit pas être",
-            "en-GB": "What the image should not be",
-            "en-US": "What the image should not be"
+            fr: "Decrire ce que l'image ne doit pas être",
+            "en-GB": "Describe what the image should not be",
+            "en-US": "Describe what the image should not be"
         }))
-        .addStringOption(option => option.setName("model").setDescription("Le modèle à utiliser").setRequired(false).setDescriptionLocalizations({
-            fr: "Le modèle à utiliser",
-            "en-GB": "The model to use",
-            "en-US": "The model to use"
+        .addStringOption(option => option.setName("model").setDescription("Un style à choisir pour l'image").setRequired(false).setDescriptionLocalizations({
+            fr: "Un style à choisir pour l'image",
+            "en-GB": "A style to choose for the image",
+            "en-US": "A style to choose for the image"
         }).setNameLocalizations({
             fr: "modèle"
         }).setAutocomplete(true))
     )
     .addSubcommand(subcommand => subcommand
         .setName("login")
-        .setDescription("Se connecter à l'IA Horde")
+        .setDescription("Ce connecter à stablehorde.net")
         .setDescriptionLocalizations({
-            fr: "Se connecter à l'IA Horde",
-            "en-GB": "Connect to AI Horde",
-            "en-US": "Connect to AI Horde"
+            fr: "Ce connecter à stablehorde.net",
+            "en-GB": "Login to stablehorde.net",
+            "en-US": "Login to stablehorde.net"
         })
     )
     .addSubcommand(subcommand => subcommand
         .setName("help")
-        .setDescription("Afficher l'aide")
+        .setDescription("Afficher l'aide IA")
         .setDescriptionLocalizations({
-            fr: "Afficher l'aide",
-            "en-GB": "Show help",
-            "en-US": "Show help"
+            fr: "Afficher l'aide IA",
+            "en-GB": "Show IA help",
+            "en-US": "Show IA help"
         })
     )
     .addSubcommand(subcommand => subcommand
