@@ -38,7 +38,7 @@ export default async function Login(command: CommandsBase, interaction: CommandI
         dispose: true,
     })
 
-    let token = command.client.getModalValue("token", modal);
+    let token = modal.fields.getTextInputValue("token")
     if (!token) {
         return modal.reply({
             content: "Vous devez entrer un token",

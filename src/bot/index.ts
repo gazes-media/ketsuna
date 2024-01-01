@@ -99,22 +99,6 @@ export default class Bot extends Client {
 		return encrypted.toString('hex') + ":" + iv.toString('hex');
 	};
 
-  getModalValue(key: string, modal: ModalSubmitInteraction){
-    let component = modal.components.find((component) => {
-      return component.components.find((subComponent) => {
-        return subComponent.customId === key;
-      });
-    })
-    if(!component) return undefined;
-    let subComponent = component.components.find((subComponent) => {
-      return subComponent.customId === key;
-    });
-    if(!subComponent) return undefined;
-    let value = subComponent.value;
-    if(!value) return undefined;
-    return value;
-  }
-
 }
 
 
