@@ -17,7 +17,7 @@ export class DeleteMessage extends baseCommands {
                 const i = await interaction.deferReply({
                     ephemeral: true
                 });
-                this.client.rest.delete(Routes.webhookMessage(this.client.user.id, interaction.token, interaction.targetMessage.id)).then(() => {
+                interaction.deleteReply(interaction.targetMessage.id).then(() => {
                     i.edit({
                         content: "Message supprimé",
                     });
