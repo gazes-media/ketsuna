@@ -1,4 +1,4 @@
-import { ActivityType, Client, Events, GatewayIntentBits, ModalSubmitInteraction, Partials } from "discord.js";
+import { ActivityType, Client, ContextMenuCommandInteraction, Events, GatewayIntentBits, MessageContextMenuCommandInteraction, ModalSubmitInteraction, Partials } from "discord.js";
 import AIHorde from "../internal_libs/aihorde";
 import * as commandList from "./list.commands";
 import CommandsBase from "./commands/baseCommands";
@@ -44,11 +44,12 @@ export default class Bot extends Client {
       setTimeout(() => {
         this.application.commands.fetch().then((commands) => {
           commands.forEach((command) => {
-            if (!this.commands.has(command.name)) {
+            if(!this.commands.has(command.name)){
               command.delete().then(() => {
-                console.log(`Command ${command.name} deleted`);
+                console.log(`[ApplicationCommand] ${command.name} deleted`);
               }).catch((err) => {
-                console.error(`Error while deleting command ${command.name}: ${err}`);
+                console.log(`[ApplicationCommand] ${command.name} not deleted`);
+                console.log(err);
               });
             }
           });

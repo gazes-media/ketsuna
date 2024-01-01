@@ -140,7 +140,7 @@ export class IaCommand extends CommandsBase {
         super(client, commandData);
     }
 
-    async run(interaction: CommandInteraction): Promise<void> {
+    async run(interaction: CommandInteraction){
         let options = interaction.options
         if (options instanceof CommandInteractionOptionResolver) {
             let subcommand = options.getSubcommand(true);
