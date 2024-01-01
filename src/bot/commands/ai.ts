@@ -7,6 +7,7 @@ import Help from "./ai/help";
 import Info from "./ai/info";
 import Ask from "./ai/ask";
 import Logout from "./ai/logout";
+import Interogate from "./ai/interogate";
 
 
 const commandData = new SlashCommandBuilder()
@@ -118,6 +119,19 @@ const commandData = new SlashCommandBuilder()
             "en-GB": "The frequency penalty",
             "en-US": "The frequency penalty"
         }))
+    ).addSubcommand(subcommand => subcommand
+        .setName("interogate")
+        .setDescription("Interroger l'IA")
+        .setDescriptionLocalizations({
+            fr: "Interroger l'IA",
+            "en-GB": "Interrogate the AI",
+            "en-US": "Interrogate the AI"
+        })
+        .addAttachmentOption(option => option.setName("image").setDescription("L'image à interroger").setRequired(true).setDescriptionLocalizations({
+            fr: "L'image à interroger",
+            "en-GB": "The image to interrogate",
+            "en-US": "The image to interrogate"
+        }))
     )
     .toJSON();
 
@@ -148,6 +162,9 @@ export class IaCommand extends CommandsBase {
                     break;
                 case "ask":
                     await Ask(this, interaction);
+                    break;
+                case "interogate":
+                    await Interogate(this, interaction);
                     break;
                 default:
                     interaction.reply({

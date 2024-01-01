@@ -1,8 +1,8 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, CommandInteractionOptionResolver, EmbedBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { ActionRowBuilder, Attachment, ButtonBuilder, ButtonStyle, CommandInteraction, CommandInteractionOptionResolver, EmbedBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import CommandsBase from "../baseCommands";
-import { GenerationInputKobold } from "../../../internal_libs/aihorde";
+import { GenerationInputKobold, HordeAsyncRequestStates, ModelInterrogationFormTypes } from "../../../internal_libs/aihorde";
 
-export default async function Ask(command: CommandsBase, interaction: CommandInteraction) {    
+export default async function Interogate(command: CommandsBase, interaction: CommandInteraction) {    
     let i = await interaction.deferReply()
     let options = interaction.options;
     let ia = command.client.aiHorde;
@@ -24,30 +24,24 @@ export default async function Ask(command: CommandsBase, interaction: CommandInt
         });
     }
     
-    let question= "", temperature, topP, frequencyPenalty;
+    let image = "https://i.imgur.com/2t1lL2U.png";
     if(options instanceof CommandInteractionOptionResolver){
-        question = options.getString("question", true);
-        temperature = options.getNumber("temperature", false);
-        topP = options.getNumber("top-p", false);
-        frequencyPenalty = options.getNumber("frequency-penalty", false);
+        image = options.getAttachment("image", true).url;
     }
 
-    let askData: GenerationInputKobold = {
-        prompt: question,
-        params: {
-            max_length: 200,
-            singleline: true,
-            frmttriminc: true,
-            frmtrmspch: true,
-            frmtrmblln: true,
-        }
-    }
-    if(topP) askData.params.top_p = topP;
-    if(temperature) askData.params.temperature = temperature;
-    if(frequencyPenalty) askData.params.rep_pen = frequencyPenalty;
-    let asked = ia.postAsyncTextGenerate(askData,{
+    let asked = ia.postAsyncInterrogate({
+        source_image: image,
+        forms: [{
+            name: ModelInterrogationFormTypes.interrogation,
+        },{
+            name: ModelInterrogationFormTypes.caption,
+        },{
+            name: ModelInterrogationFormTypes.nsfw,
+        }]
+    },{
         token: userToken
     });
+
 
     let DateStart = Date.now();
 
@@ -62,13 +56,21 @@ export default async function Ask(command: CommandsBase, interaction: CommandInt
             max: 1,
         });
         const intervalCheck = setInterval(() => {
-            ia.getTextGenerationStatus(asked.id).then((stat) => {
-                if(stat.done){
+            ia.getInterrogationStatus(asked.id).then((stat) => {
+                if(stat.state && stat.state === HordeAsyncRequestStates.done){
                     let DateEnd = Date.now();
                     clearInterval(intervalCheck);
                     let embed = new EmbedBuilder();
                     embed.setTitle("Résultat de l'IA");
-                    embed.setDescription(stat.generations[0].text);
+                    embed.setDescription(stat.forms.flatMap((form) => {
+                        if(form.result){
+                            return Object.entries(form.result).flatMap((type) => {
+                                return `## ${type[0]}\n${(type[1] instanceof Object) ? Object.entries(type[1]).map((value) => { return `**${value[0]}**: ${value[1].map((value) => { return value.text;}).join(", ")}`}).join("\n") : type[1]}`;
+                            });
+                        }else{
+                            return [];
+                        }
+                    }).join("\n"));
                     embed.setFooter({
                         text: `Généré en ${Math.round((DateEnd - DateStart)/1000)}s`
                     });
@@ -78,21 +80,14 @@ export default async function Ask(command: CommandsBase, interaction: CommandInt
                         components: []
                     });
                 }else{
-                    let wait_time = stat.wait_time || 1;
-                    let processed = "Requête envoyé à l'IA, veuillez patienter...\n";
-                    if (stat.queue_position && stat.queue_position > 0) {
-                        processed += ` (Position dans la file d'attente: ${stat.queue_position} -`;
+                    if(stat.state && stat.state === HordeAsyncRequestStates.faulted){
+                        clearInterval(intervalCheck);
+                        ia.deleteInterrogationRequest(asked.id);
+                        i.edit({
+                            content: "Une erreur est survenue",
+                        });
                     }
-                    if (stat.waiting && stat.waiting > 0) {
-                        processed += ` En attente: ${stat.waiting})\n`;
-                    }
-                    if (stat.processing && stat.processing > 0) {
-                        processed += `(En cours de traitement: ${stat.processing})\n`;
-                        processed += `(Temps d'attente estimé: <t:${parseInt((((Date.now() + (wait_time) * 1000)) / 1000).toString())}:R>)\n`;
-                    }
-                    if (stat.kudos && stat.kudos > 0) {
-                        processed += `(Kudos utilisés: ${stat.kudos})`;
-                    }
+                    let processed = stat.state ? "Requête en cours de traitement : "+ stat.state : "Requête en attente de traitement";
                     i.edit({
                         content: processed,
                         components: [
@@ -104,7 +99,7 @@ export default async function Ask(command: CommandsBase, interaction: CommandInt
                 }
             }).catch((err) => {
                 clearInterval(intervalCheck);
-                ia.deleteTextGenerationRequest(asked.id);
+                ia.deleteInterrogationRequest(asked.id);
                 i.edit({
                     content: "Une erreur est survenue",
                 });
@@ -113,7 +108,7 @@ export default async function Ask(command: CommandsBase, interaction: CommandInt
 
         buttonCollector.on("collect", (interactor) => {
             clearInterval(intervalCheck);
-            ia.deleteTextGenerationRequest(asked.id);
+            ia.deleteInterrogationRequest(asked.id);
             interactor.update({
                 content: "Requête annulé",
                 components: []
