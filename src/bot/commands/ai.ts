@@ -8,6 +8,8 @@ import Info from "./ai/info";
 import Ask from "./ai/ask";
 import Logout from "./ai/logout";
 import Interogate from "./ai/interogate";
+import { ModelGenerationInputStableSamplers } from "../../internal_libs/aihorde";
+import Advanced from "./ai/advanced";
 
 
 const commandData = new SlashCommandBuilder()
@@ -132,6 +134,110 @@ const commandData = new SlashCommandBuilder()
             "en-GB": "The image to interrogate",
             "en-US": "The image to interrogate"
         }))
+    ).addSubcommandGroup(subcommandGroup => subcommandGroup
+        .setName("advanced")
+        .setDescription("Commandes avancées de génération").addSubcommand(subcommand => subcommand
+            .setName("imagine")
+            .setDescription("Créer une image par IA")
+            .setDescriptionLocalizations({
+                fr: "Créer une image par IA",
+                "en-GB": "Create an image by AI",
+                "en-US": "Create an image by AI"
+            })
+            .addStringOption(option => option.setName("prompt").setDescription("Une description de l'image à créer").setRequired(true).setDescriptionLocalizations({
+                fr: "Une description de l'image à créer",
+                "en-GB": "A description of the image to create",
+                "en-US": "A description of the image to create"
+            }).setNameLocalizations({
+                fr: "prompt",
+                "en-GB": "prompt",
+                "en-US": "prompt"
+            }).setMaxLength(1000))
+            .addBooleanOption(option => option.setName("nsfw").setDescription("Activer le NSFW").setRequired(false).setDescriptionLocalizations({
+                fr: "Activer le NSFW",
+                "en-GB": "Enable NSFW",
+                "en-US": "Enable NSFW"
+            }))
+            .addStringOption(option => option.setName("negative_prompt").setDescription("Decrire ce que l'image ne doit pas être").setRequired(false).setNameLocalizations({
+                fr: "prompt_negatif"
+            }).setDescriptionLocalizations({
+                fr: "Decrire ce que l'image ne doit pas être",
+                "en-GB": "Describe what the image should not be",
+                "en-US": "Describe what the image should not be"
+            }))
+            .addStringOption(option => option.setName("model").setDescription("Un style à choisir pour l'image").setRequired(false).setDescriptionLocalizations({
+                fr: "Un style à choisir pour l'image",
+                "en-GB": "A style to choose for the image",
+                "en-US": "A style to choose for the image"
+            }).setNameLocalizations({
+                fr: "modèle"
+            }).setAutocomplete(true))
+            .addNumberOption(option => option.setName("step").setDescription("Le nombre d'étapes à effectuer").setRequired(false).setDescriptionLocalizations({
+                fr: "Le nombre d'étapes à effectuer",
+                "en-GB": "The number of steps to perform",
+                "en-US": "The number of steps to perform"
+            }).setMinValue(1).setMaxValue(500))
+            .addNumberOption(option => option.setName("width").setDescription("La largeur de l'image").setRequired(false).setDescriptionLocalizations({
+                fr: "La largeur de l'image",
+                "en-GB": "The width of the image",
+                "en-US": "The width of the image"
+            }).setMinValue(64).setMaxValue(3072))
+            .addNumberOption(option => option.setName("height").setDescription("La hauteur de l'image").setRequired(false).setDescriptionLocalizations({
+                fr: "La hauteur de l'image",
+                "en-GB": "The height of the image",
+                "en-US": "The height of the image"
+            }).setMinValue(64).setMaxValue(3072))
+            .addStringOption(option => option.setName("sampler_name").setDescription("Le nom de l'échantillonneur").setRequired(false).setDescriptionLocalizations({
+                fr: "Le nom de l'échantillonneur",
+                "en-GB": "The name of the sampler",
+                "en-US": "The name of the sampler"
+            }).addChoices({
+                name: ModelGenerationInputStableSamplers.DDIM,
+                value: ModelGenerationInputStableSamplers.DDIM
+            }, {
+                name: ModelGenerationInputStableSamplers.dpmsolver,
+                value: ModelGenerationInputStableSamplers.dpmsolver
+            },{
+                name: ModelGenerationInputStableSamplers.PLMS,
+                value: ModelGenerationInputStableSamplers.PLMS
+            },{
+                name: ModelGenerationInputStableSamplers.k_dpm_2,
+                value: ModelGenerationInputStableSamplers.k_dpm_2
+            },{
+                name: ModelGenerationInputStableSamplers.k_dpm_2_a,
+                value: ModelGenerationInputStableSamplers.k_dpm_2_a
+            },{
+                name: ModelGenerationInputStableSamplers.k_dpm_adaptive,
+                value: ModelGenerationInputStableSamplers.k_dpm_adaptive
+            },{
+                name: ModelGenerationInputStableSamplers.k_dpm_fast,
+                value: ModelGenerationInputStableSamplers.k_dpm_fast
+            },{
+                name: ModelGenerationInputStableSamplers.k_dpmpp_2m,
+                value: ModelGenerationInputStableSamplers.k_dpmpp_2m
+            },{
+                name: ModelGenerationInputStableSamplers.k_dpmpp_2s_a,
+                value: ModelGenerationInputStableSamplers.k_dpmpp_2s_a
+            },{
+                name: ModelGenerationInputStableSamplers.k_euler,
+                value: ModelGenerationInputStableSamplers.k_euler
+            },{
+                name: ModelGenerationInputStableSamplers.k_heun,
+                value: ModelGenerationInputStableSamplers.k_heun
+            },{
+                name: ModelGenerationInputStableSamplers.k_lms,
+                value: ModelGenerationInputStableSamplers.k_lms
+            })).addNumberOption(option => option.setName("clip_skip").setDescription("Le nombre de pas à ignorer").setRequired(false).setDescriptionLocalizations({
+                fr: "Le nombre de pas à ignorer",
+                "en-GB": "The number of steps to skip",
+                "en-US": "The number of steps to skip"
+            }).setMaxValue(12).setMinValue(1))
+            .addNumberOption(option => option.setName("n").setDescription("Le nombre d'image à générer").setRequired(false).setDescriptionLocalizations({
+                fr: "Le nombre d'image à générer",
+                "en-GB": "The number of images to generate",
+                "en-US": "The number of images to generate"
+            }).setMaxValue(10).setMinValue(1))
+        )
     )
     .toJSON();
 
@@ -143,8 +249,11 @@ export class IaCommand extends CommandsBase {
     async run(interaction: CommandInteraction){
         let options = interaction.options
         if (options instanceof CommandInteractionOptionResolver) {
-            let subcommand = options.getSubcommand(true);
+            let subcommand = options.getSubcommandGroup() ?? options.getSubcommand();
             switch (subcommand) {
+                case "advanced":
+                    await Advanced(this, interaction);
+                    break;
                 case "imagine":
                     await Imagine(this, interaction);
                     break;
