@@ -41,7 +41,7 @@ export default async function Help(command: CommandsBase, interaction: CommandIn
 
     }).join("\n");
 
-    let description = `Descriptions des commandes\n${optionsMapped}\nPour la commande de connexion </${AiCommand.name} login:${AiCommand.id}>, vous devrez d'abord allez sur [AI Horde](https://stablehorden.net/register) entrez un pseudo, puis copier la clé d'API vous aurez juste à la coller dans la modale qui s'ouvrira`;
+    let description = `Descriptions des commandes\n${optionsMapped}\nPour la commande de connexion </${AiCommand.name} login:${AiCommand.id}>, vous devrez d'abord allez sur [AI Horde](https://stablehorde.net/register) entrez un pseudo, puis copier la clé d'API vous aurez juste à la coller dans la modale qui s'ouvrira`;
     interaction.reply({
         embeds: [
             new EmbedBuilder()
