@@ -13,6 +13,10 @@ export class DeleteMessage extends baseCommands {
 
     async run(interaction: ContextMenuCommandInteraction<CacheType>) {
         if (interaction.isMessageContextMenuCommand()) {
+            if(!interaction.targetMessage.interaction) return interaction.reply({
+                content: "Ce message ne peut pas être supprimé",
+                ephemeral: true
+            });
             if (interaction.targetMessage.interaction.user.id === interaction.user.id) {
                 const i = await interaction.deferReply({
                     ephemeral: true

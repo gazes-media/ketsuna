@@ -1,6 +1,6 @@
 import CommandsBase from "../baseCommands";
 import { APIActionRowComponent, APIButtonComponent, AttachmentPayload, ButtonBuilder, ButtonStyle, Colors, CommandInteraction, CommandInteractionOptionResolver, EmbedBuilder, MessageEditOptions, MessageFlags, TextChannel, codeBlock } from "discord.js";
-import { ModelGenerationInputPostProcessingTypes, ModelGenerationInputStableSamplers } from "../../../internal_libs/aihorde";
+import { GenerationInput, ModelGenerationInputPostProcessingTypes, ModelGenerationInputStableSamplers } from "../../../internal_libs/aihorde";
 export default async function Imagine(command: CommandsBase, interaction: CommandInteraction){
     
     let userDatabase = await command.client.database.users.findFirst({
@@ -49,7 +49,7 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                 nsfwchannel = textChannel.nsfw;
             }
             command.client.timeouts.get(interaction.commandName)?.set(interaction.user.id, true);
-            ai.postAsyncImageGenerate({
+            let prompt: GenerationInput = {
                 prompt: image + "### " + negative_prompt,
                 params: {
                     "sampler_name": ModelGenerationInputStableSamplers.k_dpm_adaptive,
@@ -75,7 +75,12 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                 ],
                 nsfw: nsfwchannel ? (nsfw ? true : false) : false,
                 shared: true,
-            }, {
+            }
+
+            if(model.toLowerCase().includes("sdxl")){
+                prompt.params.hires_fix = false;
+            }
+            ai.postAsyncImageGenerate(prompt, {
                 token: defaultToken,
             }).then(async (result) => {
                 let id = result.id as string;
