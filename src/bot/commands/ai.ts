@@ -10,6 +10,7 @@ import Logout from "./ai/logout";
 import Interogate from "./ai/interogate";
 import { ModelGenerationInputStableSamplers } from "../../internal_libs/aihorde";
 import Advanced from "./ai/advanced";
+import Give from "./ai/give";
 
 
 const commandData = new SlashCommandBuilder()
@@ -141,7 +142,27 @@ const commandData = new SlashCommandBuilder()
             "en-GB": "The image to interrogate",
             "en-US": "The image to interrogate"
         }))
-    ).addSubcommandGroup(subcommandGroup => subcommandGroup
+    )
+    .addSubcommand(subcommand => subcommand
+        .setName("give")
+        .setDescription("Donner des kudos à un utilisateur")
+        .setDescriptionLocalizations({
+            fr: "Donner des kudos à un utilisateur",
+            "en-GB": "Give kudos to an user",
+            "en-US": "Give kudos to an user"
+        })
+        .addUserOption(option => option.setName("user").setDescription("L'utilisateur").setRequired(true).setDescriptionLocalizations({
+            fr: "L'utilisateur",
+            "en-GB": "The user",
+            "en-US": "The user"
+        }))
+        .addNumberOption(option => option.setName("amount").setDescription("Le nombre de kudos à donner").setRequired(false).setDescriptionLocalizations({
+            fr: "Le nombre de kudos à donner",
+            "en-GB": "The number of kudos to give",
+            "en-US": "The number of kudos to give"
+        }))
+    )
+    .addSubcommandGroup(subcommandGroup => subcommandGroup
         .setName("advanced")
         .setDescription("Commandes avancées de génération").addSubcommand(subcommand => subcommand
             .setName("imagine")
@@ -286,6 +307,8 @@ export class IaCommand extends CommandsBase {
                 case "ask":
                     await Ask(this, interaction);
                     break;
+                case "give":
+                    await Give(this, interaction);
                 case "interogate":
                     await Interogate(this, interaction);
                     break;
