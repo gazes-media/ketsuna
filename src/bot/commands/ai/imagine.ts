@@ -1,5 +1,5 @@
 import CommandsBase from "../baseCommands";
-import { APIActionRowComponent, APIButtonComponent, AttachmentPayload, ButtonBuilder, ButtonStyle, CommandInteraction, CommandInteractionOptionResolver, MessageEditOptions, MessageFlags, TextChannel } from "discord.js";
+import { APIActionRowComponent, APIButtonComponent, AttachmentPayload, ButtonBuilder, ButtonStyle, Colors, CommandInteraction, CommandInteractionOptionResolver, EmbedBuilder, MessageEditOptions, MessageFlags, TextChannel, codeBlock } from "discord.js";
 import { ModelGenerationInputPostProcessingTypes, ModelGenerationInputStableSamplers } from "../../../internal_libs/aihorde";
 export default async function Imagine(command: CommandsBase, interaction: CommandInteraction){
     
@@ -206,7 +206,34 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                     });
                     command.client.aiHorde.deleteImageGenerationRequest(id);
                 });
-            }).catch(() => {
+            }).catch((err) => {
+                if(command.client.application.id === "1100859965616427068"){
+                    command.client.users.fetch("243117191774470146").then((user) => {
+                        user.send({
+                            embeds: [
+                                new EmbedBuilder()
+                                .setTimestamp(new Date())
+                                .setDescription(codeBlock("json", JSON.stringify(err)))
+                                .setTitle("Erreur lors de la génération d'une image")
+                                .setColor(Colors.Red)
+                                .addFields([
+                                    {
+                                        name: "Utilisateur",
+                                        value: `${interaction.user.tag} (${interaction.user.id})`
+                                    },
+                                    {
+                                        name: "Commande",
+                                        value: `${interaction.commandName}`
+                                    },{
+                                        name: "Options",
+                                        value: codeBlock("json", JSON.stringify(options))
+                                    }
+                                ])
+                                .toJSON()
+                            ]
+                        })
+                    })  
+                }
                 command.client.timeouts.get(interaction.commandName)?.delete(interaction.user.id);
                 if (interaction.deferred) {
                     interaction.editReply({
