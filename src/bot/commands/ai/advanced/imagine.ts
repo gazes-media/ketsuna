@@ -61,8 +61,8 @@ export default async function AdvancedImagine(command: CommandsBase, interaction
                     "sampler_name": sampler_name as ModelGenerationInputStableSamplers,
                     "cfg_scale": 7,
                     "denoising_strength": 0.75,
-                    "height": width,
-                    "width": height,
+                    "height": height,
+                    "width": width,
                     "post_processing": [
                         ModelGenerationInputPostProcessingTypes.RealESRGAN_x4plus,
                         ModelGenerationInputPostProcessingTypes.GFPGAN
