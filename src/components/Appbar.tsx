@@ -18,9 +18,6 @@ import Link from './Link';
 const pages = [{
     name: 'Acceuil',
     href: '/'
-},{
-    name: 'Commandes',
-    href: '/commands'
 }, {
     name: 'CGU',
     href: '/cgu'
