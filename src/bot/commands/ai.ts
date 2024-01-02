@@ -32,6 +32,13 @@ const commandData = new SlashCommandBuilder()
             "en-GB": "prompt",
             "en-US": "prompt"
         }).setMaxLength(1000))
+        .addStringOption(option => option.setName("loras").setDescription("Loras à utiliser").setRequired(false).setDescriptionLocalizations({
+            fr: "Loras à utiliser",
+            "en-GB": "Loras to use",
+            "en-US": "Loras to use"
+        }).setNameLocalizations({
+            fr: "loras"
+        }).setAutocomplete(true))
         .addBooleanOption(option => option.setName("nsfw").setDescription("Activer le NSFW").setRequired(false).setDescriptionLocalizations({
             fr: "Activer le NSFW",
             "en-GB": "Enable NSFW",
@@ -153,6 +160,13 @@ const commandData = new SlashCommandBuilder()
                 "en-GB": "prompt",
                 "en-US": "prompt"
             }).setMaxLength(1000))
+            .addStringOption(option => option.setName("loras").setDescription("Loras à utiliser").setRequired(false).setDescriptionLocalizations({
+                fr: "Loras à utiliser",
+                "en-GB": "Loras to use",
+                "en-US": "Loras to use"
+            }).setNameLocalizations({
+                fr: "loras"
+            }).setAutocomplete(true))
             .addBooleanOption(option => option.setName("nsfw").setDescription("Activer le NSFW").setRequired(false).setDescriptionLocalizations({
                 fr: "Activer le NSFW",
                 "en-GB": "Enable NSFW",
@@ -293,15 +307,15 @@ export class IaCommand extends CommandsBase {
     async autocomplete(interaction: AutocompleteInteraction): Promise<void> {
         let options = interaction.options;
         if (options instanceof CommandInteractionOptionResolver) {
-            let modelName = options.getFocused(true);
-            if (modelName.name === "model") {
+            let autocomplete = options.getFocused(true);
+            if (autocomplete.name === "model") {
                 this.client.aiHorde.getModels().then((models) => {
 
                     let modelsFiltereds = models;
-                    if (modelName.value.length > 0) {
+                    if (autocomplete.value.length > 0) {
                         modelsFiltereds = models.filter((modelFilter) => {
                             if (!modelFilter?.name) return false;
-                            return modelFilter?.name.toLowerCase().includes(modelName.value.toLowerCase());
+                            return modelFilter?.name.toLowerCase().includes(autocomplete.value.toLowerCase());
                         });
                     }
                     modelsFiltereds = modelsFiltereds.slice(0, 24);
@@ -312,6 +326,17 @@ export class IaCommand extends CommandsBase {
                         }
                     })
                     interaction.respond(optionsMapped);
+                });
+            }else if(autocomplete.name === "loras"){
+                this.client.aiHorde.getLorasModels(autocomplete.name).then((models) => {
+                    interaction.respond(models.items.map((model) => {
+                        return {
+                            name: `${model.name.substring(0,60)} ${model.nsfw ? "(NSFW)" : ""}`,
+                            value: model.name
+                        }
+                    })).catch((_) => {
+                        // ignore Too Much Time passed
+                    });
                 });
             }
         }

@@ -48,6 +48,7 @@ export default async function AdvancedImagine(command: CommandsBase, interaction
         let width = options.getNumber("width") || 512;
         let sampler_name = options.getString("sampler_name") || ModelGenerationInputStableSamplers.k_dpm_adaptive;
         let n = (options.getNumber("n") || 4) > 10 ? 10 : (options.getNumber("n") || 4);
+        let loras = options.getString("loras") || null;
         if (image) {
             let textChannel = (interaction.channel instanceof TextChannel ? interaction.channel : null);
             let nsfwchannel = true;
@@ -85,6 +86,15 @@ export default async function AdvancedImagine(command: CommandsBase, interaction
 
             if(model.toLowerCase().includes("sdxl")){
                 prompt.params.hires_fix = false;
+            }
+            if(loras){
+                prompt.params.loras = [
+                    {
+                        name:loras,
+                        model:1,
+                        clip:1,
+                    }
+                ]
             }
 
             ai.postAsyncImageGenerate(prompt, {
