@@ -328,7 +328,7 @@ export class IaCommand extends CommandsBase {
                     interaction.respond(optionsMapped);
                 });
             }else if(autocomplete.name === "loras"){
-                this.client.aiHorde.getLorasModels(autocomplete.name).then((models) => {
+                this.client.aiHorde.getLorasModels(autocomplete.value).then((models) => {
                     interaction.respond(models.items.map((model) => {
                         return {
                             name: `${model.name.substring(0,60)} ${model.nsfw ? "(NSFW)" : ""}`,
