@@ -1,8 +1,8 @@
 import CommandsBase from "../baseCommands";
 import { APIActionRowComponent, APIButtonComponent, AttachmentPayload, ButtonBuilder, ButtonStyle, Colors, CommandInteraction, CommandInteractionOptionResolver, EmbedBuilder, MessageEditOptions, MessageFlags, TextChannel, codeBlock } from "discord.js";
 import { GenerationInput, ModelGenerationInputPostProcessingTypes, ModelGenerationInputStableSamplers } from "../../../internal_libs/aihorde";
-export default async function Imagine(command: CommandsBase, interaction: CommandInteraction){
-    
+export default async function Imagine(command: CommandsBase, interaction: CommandInteraction) {
+
     let userDatabase = await command.client.database.users.findFirst({
         where: {
             id: interaction.user.id
@@ -78,25 +78,25 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                 shared: true,
             }
 
-            function getOnlyUTF8(str: string) {
-                return str.replace(/[^\x00-\x7F]/g, "");
-            }
-
-        if(loras){
-            let lorasDatas = await ai.getLorasModels(getOnlyUTF8(loras));
-            let firstImageMeta = lorasDatas.items[0].modelVersions[lorasDatas.items[0].modelVersions.length - 1].images[0].meta;
-            prompt.params.steps = firstImageMeta.steps;
-            prompt.params.cfg_scale = firstImageMeta.cfgScale;
-            prompt.prompt = (firstImageMeta.prompt + image + "### " + firstImageMeta.negativePrompt + negative_prompt).substring(0, 1024);
+            if (loras) {
+                try {
+                    let lorasDatas = await ai.getLorasModels(loras);
+                    let firstImageMeta = lorasDatas.items[0].modelVersions[lorasDatas.items[0].modelVersions.length - 1].images[0].meta;
+                    prompt.params.steps = firstImageMeta.steps;
+                    prompt.params.cfg_scale = firstImageMeta.cfgScale;
+                    prompt.prompt = firstImageMeta.prompt + image.substring(0, 1024) + "### " + firstImageMeta.negativePrompt
+                } catch (e) {
+                    console.log("Loras was not found")
+                }
                 prompt.params.loras = [
                     {
-                        name:loras,
-                        model:1,
-                        clip:1,
+                        name: loras,
+                        model: 1,
+                        clip: 1,
                     }
                 ]
             }
-            if(model.toLowerCase().includes("sdxl")){
+            if (model.toLowerCase().includes("sdxl")) {
                 prompt.params.hires_fix = false;
             }
             ai.postAsyncImageGenerate(prompt, {
@@ -187,7 +187,7 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                                             if (files.length > 0) {
                                                 message.files = files;
                                             }
-                                            interaction.editReply(message).catch(e => { 
+                                            interaction.editReply(message).catch(e => {
                                                 clearInterval(interval);
                                                 collector.stop("cancel");
                                                 command.client.timeouts.get(interaction.commandName)?.delete(interaction.user.id);
@@ -195,7 +195,7 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                                             });;
                                         })
                                     } else {
-                                        interaction.editReply(message).catch(e => { 
+                                        interaction.editReply(message).catch(e => {
                                             clearInterval(interval);
                                             collector.stop("cancel");
                                             command.client.timeouts.get(interaction.commandName)?.delete(interaction.user.id);
@@ -209,7 +209,7 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                                 interaction.editReply({
                                     content: "Impossible de générer l'image, le model demandé n'est pas disponible",
                                     components: []
-                                }).catch(e => { 
+                                }).catch(e => {
                                     clearInterval(interval);
                                     collector.stop("cancel");
                                     command.client.timeouts.get(interaction.commandName)?.delete(interaction.user.id);
@@ -231,32 +231,32 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                     command.client.aiHorde.deleteImageGenerationRequest(id);
                 });
             }).catch((err) => {
-                if(command.client.application.id === "1100859965616427068"){
+                if (command.client.application.id === "1100859965616427068") {
                     command.client.users.fetch("243117191774470146").then((user) => {
                         user.send({
                             embeds: [
                                 new EmbedBuilder()
-                                .setTimestamp(new Date())
-                                .setDescription(codeBlock("json", JSON.stringify(err)))
-                                .setTitle("Erreur lors de la génération d'une image")
-                                .setColor(Colors.Red)
-                                .addFields([
-                                    {
-                                        name: "Utilisateur",
-                                        value: `${interaction.user.tag} (${interaction.user.id})`
-                                    },
-                                    {
-                                        name: "Commande",
-                                        value: `${interaction.commandName}`
-                                    },{
-                                        name: "Options",
-                                        value: codeBlock("json", JSON.stringify(options))
-                                    }
-                                ])
-                                .toJSON()
+                                    .setTimestamp(new Date())
+                                    .setDescription(codeBlock("json", JSON.stringify(err)))
+                                    .setTitle("Erreur lors de la génération d'une image")
+                                    .setColor(Colors.Red)
+                                    .addFields([
+                                        {
+                                            name: "Utilisateur",
+                                            value: `${interaction.user.tag} (${interaction.user.id})`
+                                        },
+                                        {
+                                            name: "Commande",
+                                            value: `${interaction.commandName}`
+                                        }, {
+                                            name: "Options",
+                                            value: codeBlock("json", JSON.stringify(options))
+                                        }
+                                    ])
+                                    .toJSON()
                             ]
                         })
-                    })  
+                    })
                 }
                 command.client.timeouts.get(interaction.commandName)?.delete(interaction.user.id);
                 if (interaction.deferred) {

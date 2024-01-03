@@ -87,21 +87,22 @@ export default async function AdvancedImagine(command: CommandsBase, interaction
             if(model.toLowerCase().includes("sdxl")){
                 prompt.params.hires_fix = false;
             }
-            function getOnlyUTF8(str: string) {
-                return str.replace(/[^\x00-\x7F]/g, "");
-            }
 
-        if(loras){
-            let lorasDatas = await ai.getLorasModels(getOnlyUTF8(loras));
-            let firstImageMeta = lorasDatas.items[0].modelVersions[lorasDatas.items[0].modelVersions.length - 1].images[0].meta;
-            prompt.params.steps = firstImageMeta.steps;
-            prompt.params.cfg_scale = firstImageMeta.cfgScale;
-            prompt.prompt = (firstImageMeta.prompt + image + "### " + firstImageMeta.negativePrompt + negative_prompt).substring(0, 1024);
+            if (loras) {
+                try {
+                    let lorasDatas = await ai.getLorasModels(loras);
+                    let firstImageMeta = lorasDatas.items[0].modelVersions[lorasDatas.items[0].modelVersions.length - 1].images[0].meta;
+                    prompt.params.steps = firstImageMeta.steps;
+                    prompt.params.cfg_scale = firstImageMeta.cfgScale;
+                    prompt.prompt = firstImageMeta.prompt + image.substring(0, 1024) + "### " + firstImageMeta.negativePrompt
+                } catch (e) {
+                    console.log("Loras was not found")
+                }
                 prompt.params.loras = [
                     {
-                        name:loras,
-                        model:1,
-                        clip:1,
+                        name: loras,
+                        model: 1,
+                        clip: 1,
                     }
                 ]
             }
