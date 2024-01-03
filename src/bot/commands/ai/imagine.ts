@@ -43,6 +43,7 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
         let negative_prompt = options.getString("negative_prompt") || "deformed, blurry,[bad anatomy], disfigured, poorly drawn face, [[[mutation]]], mutated, [[[extra arms]]], extra legs, ugly, horror, out of focus, depth of field, focal blur, bad quality, double body, [[double torso]], equine, bovine,[[feral]], [duo], [[canine]], creepy fingers, extra fingers, bad breasts, bad butt, split breasts, split butt, Blurry textures, blurry everything, creepy arms, bad arm anatomy, bad leg anatomy, bad finger anatomy, poor connection of the body with clothing and other things, poor quality character, poor quality body, Bad clothes quality, bad underwear, bad ears, poor eyes quality, poor quality of the background, poor facial quality, text.";
         let nsfw = options.getBoolean("nsfw") || false;
         let loras = options.getString("loras") || null;
+        let preprompt = options.getBoolean("preprompt") || false;
         if (image) {
             let textChannel = (interaction.channel instanceof TextChannel ? interaction.channel : null);
             let nsfwchannel = true;
@@ -79,17 +80,21 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
             }
 
             if (loras) {
-                try {
-                    let lorasDatas = await ai.getLorasModels(loras);
-                    let firstItem = lorasDatas.items[0];
-                    let randomModelVersion = firstItem.modelVersions[Math.floor(Math.random() * firstItem.modelVersions.length)];
-                    let randomMetaImage = randomModelVersion.images[Math.floor(Math.random() * randomModelVersion.images.length)].meta;
-                    prompt.params.steps = randomMetaImage.steps;
-                    prompt.params.cfg_scale = randomMetaImage.cfgScale;
-                    prompt.prompt = randomMetaImage.prompt + image.substring(0, 1024) + "### " + randomMetaImage.negativePrompt
-                } catch (e) {
-                    console.log("Loras was not found")
+            // if preprompt is selected, we get a random model, and a random image from this model to use as prompt
+                if (preprompt) {
+                    try {
+                        let lorasDatas = await ai.getLorasModels(loras);
+                        let firstItem = lorasDatas.items[0];
+                        let randomModelVersion = firstItem.modelVersions[Math.floor(Math.random() * firstItem.modelVersions.length)];
+                        let randomMetaImage = randomModelVersion.images[Math.floor(Math.random() * randomModelVersion.images.length)].meta;
+                        prompt.params.steps = randomMetaImage.steps;
+                        prompt.params.cfg_scale = randomMetaImage.cfgScale;
+                        prompt.prompt = randomMetaImage.prompt + image.substring(0, 1024) + "### " + randomMetaImage.negativePrompt
+                    } catch (e) {
+                        console.log("Loras was not found")
+                    }
                 }
+
                 prompt.params.loras = [
                     {
                         name: loras,

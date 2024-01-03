@@ -891,8 +891,8 @@ export class AIHorde {
     }
 
     
-    async getLorasModels(name: string = "Anime"): Promise<CivitAIModels> {
-        const req = Centra(`https://civitai.com/api/v1/models?types=LORA&limit=12&query=${encodeURIComponent(name)}`, "GET")
+    async getLorasModels(name: string = "Anime", page: number= 1): Promise<CivitAIModels> {
+        const req = Centra(`https://civitai.com/api/v1/models?types=LORA&limit=12&query=${encodeURIComponent(name)}&page=${page}`, "GET")
         const res = await req.send()
         switch(res.statusCode) {
             case 401:

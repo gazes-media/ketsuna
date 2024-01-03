@@ -89,17 +89,6 @@ export default async function AdvancedImagine(command: CommandsBase, interaction
             }
 
             if (loras) {
-                try {
-                    let lorasDatas = await ai.getLorasModels(loras);
-                    let firstItem = lorasDatas.items[0];
-                    let randomModelVersion = firstItem.modelVersions[Math.floor(Math.random() * firstItem.modelVersions.length)];
-                    let randomMetaImage = randomModelVersion.images[Math.floor(Math.random() * randomModelVersion.images.length)].meta;
-                    prompt.params.steps = randomMetaImage.steps;
-                    prompt.params.cfg_scale = randomMetaImage.cfgScale;
-                    prompt.prompt = randomMetaImage.prompt + image.substring(0, 1024) + "### " + randomMetaImage.negativePrompt
-                } catch (e) {
-                    console.log("Loras was not found")
-                }
                 prompt.params.loras = [
                     {
                         name: loras,

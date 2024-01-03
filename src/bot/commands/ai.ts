@@ -18,214 +18,153 @@ const commandData = new SlashCommandBuilder()
     .setDescription("Commandes IA")
     .addSubcommand(subcommand => subcommand
         .setName("imagine")
-        .setDescription("Créer une image par IA")
+        .setDescription("Create an image by AI")
         .setDescriptionLocalizations({
             fr: "Créer une image par IA",
-            "en-GB": "Create an image by AI",
-            "en-US": "Create an image by AI"
         })
-        .addStringOption(option => option.setName("prompt").setDescription("Une description de l'image à créer").setRequired(true).setDescriptionLocalizations({
+        .addStringOption(option => option.setName("prompt").setDescription("A description of the image to create").setRequired(true).setDescriptionLocalizations({
             fr: "Une description de l'image à créer",
-            "en-GB": "A description of the image to create",
-            "en-US": "A description of the image to create"
         }).setNameLocalizations({
             fr: "prompt",
-            "en-GB": "prompt",
-            "en-US": "prompt"
         }).setMaxLength(1000))
-        .addStringOption(option => option.setName("loras").setDescription("Loras à utiliser").setRequired(false).setDescriptionLocalizations({
+        .addStringOption(option => option.setName("loras").setDescription("Loras to use").setRequired(false).setDescriptionLocalizations({
             fr: "Loras à utiliser",
-            "en-GB": "Loras to use",
-            "en-US": "Loras to use"
         }).setNameLocalizations({
             fr: "loras"
         }).setAutocomplete(true))
-        .addBooleanOption(option => option.setName("nsfw").setDescription("Activer le NSFW").setRequired(false).setDescriptionLocalizations({
-            fr: "Activer le NSFW",
-            "en-GB": "Enable NSFW",
-            "en-US": "Enable NSFW"
+        .addBooleanOption(option => option.setName("preprompt").setDescription("Inject a default prompt (when using Loras)").setRequired(false).setDescriptionLocalizations({
+            fr: "Injecter un prompt par défaut (lors de l'utilisation de Loras)",
         }))
-        .addStringOption(option => option.setName("negative_prompt").setDescription("Decrire ce que l'image ne doit pas être").setRequired(false).setNameLocalizations({
+        .addBooleanOption(option => option.setName("nsfw").setDescription("Enable NSFW").setRequired(false).setDescriptionLocalizations({
+            fr: "Activer le NSFW",
+        }))
+        .addStringOption(option => option.setName("negative_prompt").setDescription("Describe what the image should not be").setRequired(false).setNameLocalizations({
             fr: "prompt_negatif"
         }).setDescriptionLocalizations({
             fr: "Decrire ce que l'image ne doit pas être",
-            "en-GB": "Describe what the image should not be",
-            "en-US": "Describe what the image should not be"
         }))
-        .addStringOption(option => option.setName("model").setDescription("Un style à choisir pour l'image").setRequired(false).setDescriptionLocalizations({
+        .addStringOption(option => option.setName("model").setDescription("A style to choose for the image").setRequired(false).setDescriptionLocalizations({
             fr: "Un style à choisir pour l'image",
-            "en-GB": "A style to choose for the image",
-            "en-US": "A style to choose for the image"
         }).setNameLocalizations({
             fr: "modèle"
         }).setAutocomplete(true))
     )
     .addSubcommand(subcommand => subcommand
         .setName("login")
-        .setDescription("Ce connecter à stablehorde.net")
+        .setDescription("Login to stablehorde.net")
         .setDescriptionLocalizations({
             fr: "Ce connecter à stablehorde.net",
-            "en-GB": "Login to stablehorde.net",
-            "en-US": "Login to stablehorde.net"
         })
     )
     .addSubcommand(subcommand => subcommand
         .setName("help")
-        .setDescription("Afficher l'aide IA")
+        .setDescription("Show IA help")
         .setDescriptionLocalizations({
             fr: "Afficher l'aide IA",
-            "en-GB": "Show IA help",
-            "en-US": "Show IA help"
         })
     )
     .addSubcommand(subcommand => subcommand
         .setName("info")
-        .setDescription("Afficher les informations d'un utilisateur")
+        .setDescription("Show user informations")
         .setDescriptionLocalizations({
             fr: "Afficher les informations d'un utilisateur",
-            "en-GB": "Show user informations",
-            "en-US": "Show user informations"
         })
-        .addUserOption(option => option.setName("user").setDescription("L'utilisateur").setRequired(false).setDescriptionLocalizations({
-            fr: "L'utilisateur",
-            "en-GB": "The user",
-            "en-US": "The user"
+        .addUserOption(option => option.setName("user").setDescription("An user other than you").setRequired(false).setDescriptionLocalizations({
+            fr: "Un autre utilisateur que vous",
         }))
     )
     .addSubcommand(subcommand => subcommand
         .setName("logout")
-        .setDescription("Se déconnecter de stablehorde.net")
+        .setDescription("Logout to stablehorde.net")
         .setDescriptionLocalizations({
             fr: "Se déconnecter de stablehorde.net",
-            "en-GB": "Logout to stablehorde.net",
-            "en-US": "Logout to stablehorde.net"
         })
     )
     .addSubcommand(subcommand => subcommand
         .setName("ask")
-        .setDescription("Poser une question à l'IA")
+        .setDescription("Ask a question to the AI")
         .setDescriptionLocalizations({
             fr: "Poser une question à l'IA",
-            "en-GB": "Ask a question to the AI",
-            "en-US": "Ask a question to the AI"
         })
-        .addStringOption(option => option.setName("question").setDescription("La question à poser").setRequired(true).setDescriptionLocalizations({
+        .addStringOption(option => option.setName("question").setDescription("The question to ask").setRequired(true).setDescriptionLocalizations({
             fr: "La question à poser",
-            "en-GB": "The question to ask",
-            "en-US": "The question to ask"
         }).setMaxLength(1024))
-        .addNumberOption(option => option.setName("temperature").setDescription("La température de la réponse").setRequired(false).setDescriptionLocalizations({
+        .addNumberOption(option => option.setName("temperature").setDescription("The temperature of the answer").setRequired(false).setDescriptionLocalizations({
             fr: "La température de la réponse",
-            "en-GB": "The temperature of the answer",
-            "en-US": "The temperature of the answer"
         }))
-        .addNumberOption(option => option.setName("top-p").setDescription("La probabilité de la réponse").setRequired(false).setDescriptionLocalizations({
+        .addNumberOption(option => option.setName("top-p").setDescription("The probability of the answer").setRequired(false).setDescriptionLocalizations({
             fr: "La probabilité de la réponse",
-            "en-GB": "The probability of the answer",
-            "en-US": "The probability of the answer"
         }))
-        .addNumberOption(option => option.setName("frequency-penalty").setDescription("La pénalité de fréquence").setRequired(false).setDescriptionLocalizations({
+        .addNumberOption(option => option.setName("frequency-penalty").setDescription("The frequency penalty").setRequired(false).setDescriptionLocalizations({
             fr: "La pénalité de fréquence",
-            "en-GB": "The frequency penalty",
-            "en-US": "The frequency penalty"
         }))
     ).addSubcommand(subcommand => subcommand
         .setName("interogate")
-        .setDescription("Interroger l'IA")
+        .setDescription("Interrogate the AI")
         .setDescriptionLocalizations({
             fr: "Interroger l'IA",
-            "en-GB": "Interrogate the AI",
-            "en-US": "Interrogate the AI"
         })
-        .addAttachmentOption(option => option.setName("image").setDescription("L'image à interroger").setRequired(true).setDescriptionLocalizations({
+        .addAttachmentOption(option => option.setName("image").setDescription("The image to interrogate").setRequired(true).setDescriptionLocalizations({
             fr: "L'image à interroger",
-            "en-GB": "The image to interrogate",
-            "en-US": "The image to interrogate"
         }))
     )
     .addSubcommand(subcommand => subcommand
         .setName("give")
-        .setDescription("Donner des kudos à un utilisateur")
+        .setDescription("Give kudos to an user")
         .setDescriptionLocalizations({
             fr: "Donner des kudos à un utilisateur",
-            "en-GB": "Give kudos to an user",
-            "en-US": "Give kudos to an user"
         })
-        .addUserOption(option => option.setName("user").setDescription("L'utilisateur").setRequired(true).setDescriptionLocalizations({
+        .addUserOption(option => option.setName("user").setDescription("The user").setRequired(true).setDescriptionLocalizations({
             fr: "L'utilisateur",
-            "en-GB": "The user",
-            "en-US": "The user"
         }))
-        .addNumberOption(option => option.setName("amount").setDescription("Le nombre de kudos à donner").setRequired(false).setDescriptionLocalizations({
+        .addNumberOption(option => option.setName("amount").setDescription("The number of kudos to give").setRequired(false).setDescriptionLocalizations({
             fr: "Le nombre de kudos à donner",
-            "en-GB": "The number of kudos to give",
-            "en-US": "The number of kudos to give"
         }))
     )
     .addSubcommandGroup(subcommandGroup => subcommandGroup
         .setName("advanced")
-        .setDescription("Commandes avancées de génération").addSubcommand(subcommand => subcommand
+        .setDescription("Advanced generation commands").setDescriptionLocalizations({
+            fr: "Commandes avancées de génération"
+        }).addSubcommand(subcommand => subcommand
             .setName("imagine")
-            .setDescription("Créer une image par IA")
+            .setDescription("Create an image by AI")
             .setDescriptionLocalizations({
                 fr: "Créer une image par IA",
-                "en-GB": "Create an image by AI",
-                "en-US": "Create an image by AI"
             })
-            .addStringOption(option => option.setName("prompt").setDescription("Une description de l'image à créer").setRequired(true).setDescriptionLocalizations({
+            .addStringOption(option => option.setName("prompt").setDescription("A description of the image to create").setRequired(true).setDescriptionLocalizations({
                 fr: "Une description de l'image à créer",
-                "en-GB": "A description of the image to create",
-                "en-US": "A description of the image to create"
             }).setNameLocalizations({
                 fr: "prompt",
-                "en-GB": "prompt",
-                "en-US": "prompt"
             }).setMaxLength(1000))
-            .addStringOption(option => option.setName("loras").setDescription("Loras à utiliser").setRequired(false).setDescriptionLocalizations({
+            .addStringOption(option => option.setName("loras").setDescription("Loras to use").setRequired(false).setDescriptionLocalizations({
                 fr: "Loras à utiliser",
-                "en-GB": "Loras to use",
-                "en-US": "Loras to use"
             }).setNameLocalizations({
                 fr: "loras"
             }).setAutocomplete(true))
-            .addBooleanOption(option => option.setName("nsfw").setDescription("Activer le NSFW").setRequired(false).setDescriptionLocalizations({
+            .addBooleanOption(option => option.setName("nsfw").setDescription("Enable NSFW").setRequired(false).setDescriptionLocalizations({
                 fr: "Activer le NSFW",
-                "en-GB": "Enable NSFW",
-                "en-US": "Enable NSFW"
             }))
-            .addStringOption(option => option.setName("negative_prompt").setDescription("Decrire ce que l'image ne doit pas être").setRequired(false).setNameLocalizations({
+            .addStringOption(option => option.setName("negative_prompt").setDescription("Describe what the image should not be").setRequired(false).setNameLocalizations({
                 fr: "prompt_negatif"
             }).setDescriptionLocalizations({
                 fr: "Decrire ce que l'image ne doit pas être",
-                "en-GB": "Describe what the image should not be",
-                "en-US": "Describe what the image should not be"
             }))
-            .addStringOption(option => option.setName("model").setDescription("Un style à choisir pour l'image").setRequired(false).setDescriptionLocalizations({
+            .addStringOption(option => option.setName("model").setDescription("A style to choose for the image").setRequired(false).setDescriptionLocalizations({
                 fr: "Un style à choisir pour l'image",
-                "en-GB": "A style to choose for the image",
-                "en-US": "A style to choose for the image"
             }).setNameLocalizations({
                 fr: "modèle"
             }).setAutocomplete(true))
-            .addNumberOption(option => option.setName("step").setDescription("Le nombre d'étapes à effectuer").setRequired(false).setDescriptionLocalizations({
+            .addNumberOption(option => option.setName("step").setDescription("The number of steps to perform").setRequired(false).setDescriptionLocalizations({
                 fr: "Le nombre d'étapes à effectuer",
-                "en-GB": "The number of steps to perform",
-                "en-US": "The number of steps to perform"
             }).setMinValue(1).setMaxValue(500))
-            .addNumberOption(option => option.setName("width").setDescription("La largeur de l'image").setRequired(false).setDescriptionLocalizations({
+            .addNumberOption(option => option.setName("width").setDescription("The width of the image").setRequired(false).setDescriptionLocalizations({
                 fr: "La largeur de l'image",
-                "en-GB": "The width of the image",
-                "en-US": "The width of the image"
             }).setMinValue(64).setMaxValue(3072))
-            .addNumberOption(option => option.setName("height").setDescription("La hauteur de l'image").setRequired(false).setDescriptionLocalizations({
+            .addNumberOption(option => option.setName("height").setDescription("The height of the image").setRequired(false).setDescriptionLocalizations({
                 fr: "La hauteur de l'image",
-                "en-GB": "The height of the image",
-                "en-US": "The height of the image"
             }).setMinValue(64).setMaxValue(3072))
-            .addStringOption(option => option.setName("sampler_name").setDescription("Le nom de l'échantillonneur").setRequired(false).setDescriptionLocalizations({
+            .addStringOption(option => option.setName("sampler_name").setDescription("The name of the sampler").setRequired(false).setDescriptionLocalizations({
                 fr: "Le nom de l'échantillonneur",
-                "en-GB": "The name of the sampler",
-                "en-US": "The name of the sampler"
             }).addChoices({
                 name: ModelGenerationInputStableSamplers.DDIM,
                 value: ModelGenerationInputStableSamplers.DDIM
@@ -262,15 +201,11 @@ const commandData = new SlashCommandBuilder()
             },{
                 name: ModelGenerationInputStableSamplers.k_lms,
                 value: ModelGenerationInputStableSamplers.k_lms
-            })).addNumberOption(option => option.setName("clip_skip").setDescription("Le nombre de pas à ignorer").setRequired(false).setDescriptionLocalizations({
+            })).addNumberOption(option => option.setName("clip_skip").setDescription("The number of steps to skip").setRequired(false).setDescriptionLocalizations({
                 fr: "Le nombre de pas à ignorer",
-                "en-GB": "The number of steps to skip",
-                "en-US": "The number of steps to skip"
             }).setMaxValue(12).setMinValue(1))
-            .addNumberOption(option => option.setName("n").setDescription("Le nombre d'image à générer").setRequired(false).setDescriptionLocalizations({
+            .addNumberOption(option => option.setName("n").setDescription("The number of images to generate").setRequired(false).setDescriptionLocalizations({
                 fr: "Le nombre d'image à générer",
-                "en-GB": "The number of images to generate",
-                "en-US": "The number of images to generate"
             }).setMaxValue(10).setMinValue(1))
         )
     )
