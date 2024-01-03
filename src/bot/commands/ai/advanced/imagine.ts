@@ -87,7 +87,16 @@ export default async function AdvancedImagine(command: CommandsBase, interaction
             if(model.toLowerCase().includes("sdxl")){
                 prompt.params.hires_fix = false;
             }
-            if(loras){
+            function getOnlyUTF8(str: string) {
+                return str.replace(/[^\x00-\x7F]/g, "");
+            }
+
+        if(loras){
+            let lorasDatas = await ai.getLorasModels(getOnlyUTF8(loras));
+            let firstImageMeta = lorasDatas.items[0].modelVersions[lorasDatas.items[0].modelVersions.length - 1].images[0].meta;
+            prompt.params.steps = firstImageMeta.steps;
+            prompt.params.cfg_scale = firstImageMeta.cfgScale;
+            prompt.prompt = (firstImageMeta.prompt + image + "### " + firstImageMeta.negativePrompt + negative_prompt).substring(0, 1024);
                 prompt.params.loras = [
                     {
                         name:loras,
@@ -96,7 +105,6 @@ export default async function AdvancedImagine(command: CommandsBase, interaction
                     }
                 ]
             }
-
             ai.postAsyncImageGenerate(prompt, {
                 token: defaultToken,
             }).then(async (result) => {
