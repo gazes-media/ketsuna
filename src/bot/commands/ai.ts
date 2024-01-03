@@ -11,6 +11,7 @@ import Interogate from "./ai/interogate";
 import { ModelGenerationInputStableSamplers } from "../../internal_libs/aihorde";
 import Advanced from "./ai/advanced";
 import Give from "./ai/give";
+import { bt } from "../../main";
 
 
 const commandData = new SlashCommandBuilder()
@@ -256,7 +257,7 @@ export class IaCommand extends CommandsBase {
             }
         } else {
             interaction.reply({
-                content: "Une erreur est survenue",
+                content: bt.__({ phrase: "An error occured", locale: interaction.locale }),
                 flags: MessageFlags.Ephemeral
             });
         }

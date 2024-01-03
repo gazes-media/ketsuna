@@ -1,6 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, CommandInteractionOptionResolver, EmbedBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import CommandsBase from "../baseCommands";
 import { GenerationInputKobold } from "../../../internal_libs/aihorde";
+import { bt } from "../../../main";
 
 export default async function Ask(command: CommandsBase, interaction: CommandInteraction) {    
     let i = await interaction.deferReply()
@@ -20,7 +21,7 @@ export default async function Ask(command: CommandsBase, interaction: CommandInt
     });
     }catch(err){
         i.edit({
-            content:"User not registered operation start with default token"
+            content: bt.__({ phrase: "You must login to StableHorde", locale: interaction.locale }),
         });
     }
     
@@ -53,7 +54,7 @@ export default async function Ask(command: CommandsBase, interaction: CommandInt
 
     asked.then((asked) => {
         i.edit({
-            content: "Requête envoyé à l'IA, veuillez patienter...",
+            content: bt.__({ phrase: "Request sent to the AI, please wait...", locale: interaction.locale }),
         });
         let buttonCollector = i.createMessageComponentCollector({
             filter: (interactor) => {
@@ -67,10 +68,10 @@ export default async function Ask(command: CommandsBase, interaction: CommandInt
                     let DateEnd = Date.now();
                     clearInterval(intervalCheck);
                     let embed = new EmbedBuilder();
-                    embed.setTitle("Résultat de l'IA");
+                    embed.setTitle(bt.__({ phrase: "AI Response", locale: interaction.locale }));
                     embed.setDescription(stat.generations[0].text);
                     embed.setFooter({
-                        text: `Généré en ${Math.round((DateEnd - DateStart)/1000)}s`
+                        text: bt.__({ phrase: "Time elapsed: %s seconds", locale: interaction.locale },String((DateEnd - DateStart) / 1000))
                     });
                     i.edit({
                         content: "",
@@ -79,25 +80,30 @@ export default async function Ask(command: CommandsBase, interaction: CommandInt
                     });
                 }else{
                     let wait_time = stat.wait_time || 1;
-                    let processed = "Requête envoyé à l'IA, veuillez patienter...\n";
+                    let processed = bt.__({ phrase: "Request sent to the AI, please wait...", locale: interaction.locale }) + "\n";
                     if (stat.queue_position && stat.queue_position > 0) {
-                        processed += ` (Position dans la file d'attente: ${stat.queue_position} -`;
+                        processed += bt.__({ phrase: "(Position in the queue: %s -", locale: interaction.locale },String(stat.queue_position));
                     }
                     if (stat.waiting && stat.waiting > 0) {
                         processed += ` En attente: ${stat.waiting})\n`;
+                        processed += bt.__({ phrase: "Waiting : %s", locale: interaction.locale },String(stat.waiting));
                     }
                     if (stat.processing && stat.processing > 0) {
-                        processed += `(En cours de traitement: ${stat.processing})\n`;
-                        processed += `(Temps d'attente estimé: <t:${parseInt((((Date.now() + (wait_time) * 1000)) / 1000).toString())}:R>)\n`;
+                        processed += bt.__({ phrase: "Processing : %s", locale: interaction.locale },String(stat.processing));
+                        processed += bt.__({ phrase: "(Estimated waiting time: <t:%s:R>)", locale: interaction.locale },String(parseInt((((Date.now() + (wait_time) * 1000)) / 1000).toString())));
                     }
                     if (stat.kudos && stat.kudos > 0) {
-                        processed += `(Kudos utilisés: ${stat.kudos})`;
+                        processed += bt.__({ phrase: "Kudos used: %s", locale: interaction.locale },String(stat.kudos));
                     }
                     i.edit({
                         content: processed,
                         components: [
                             new ActionRowBuilder<ButtonBuilder>().addComponents(
-                                new ButtonBuilder().setCustomId("cancel").setLabel("Annuler").setStyle(ButtonStyle.Danger)
+                                new ButtonBuilder().setCustomId("cancel").setLabel(bt.__({
+                                    phrase: "Cancel",
+                                    locale: interaction.locale
+                                })).setStyle(ButtonStyle.Danger)
+                                .setEmoji("🚫")
                             )
                         ]
                     });
@@ -106,7 +112,7 @@ export default async function Ask(command: CommandsBase, interaction: CommandInt
                 clearInterval(intervalCheck);
                 ia.deleteTextGenerationRequest(asked.id);
                 i.edit({
-                    content: "Une erreur est survenue",
+                    content: bt.__({ phrase: "An error occurred, request impossible", locale: interaction.locale }),
                 });
             });
         },5000);
@@ -115,14 +121,14 @@ export default async function Ask(command: CommandsBase, interaction: CommandInt
             clearInterval(intervalCheck);
             ia.deleteTextGenerationRequest(asked.id);
             interactor.update({
-                content: "Requête annulé",
+                content: bt.__({ phrase: "Request canceled", locale: interaction.locale }),
                 components: []
             });
         });
     }).catch((err) => {
         console.log(err);
         i.edit({
-            content: "Une erreur est survenue, requête impossible",
+            content: bt.__({ phrase: "An error occurred, request impossible", locale: interaction.locale }),
         });
     });
 

@@ -1,19 +1,16 @@
 import { ApplicationCommandOption, ApplicationCommandOptionType, CommandInteraction, EmbedBuilder, MessageFlags } from "discord.js";
 import CommandsBase from "../baseCommands";
+import { bt } from "../../../main";
 
 export default async function Help(command: CommandsBase, interaction: CommandInteraction) {
     let AiCommand = command.client.application.commands.cache.find((cmd) => {
         return cmd.name === interaction.commandName;
     });
     if (!AiCommand) return interaction.reply({
-        content: "Une erreur est survenue commande introuvable",
+        content: bt.__({ phrase: "An error occurred, command not found", locale: interaction.locale }), 
         flags: MessageFlags.Ephemeral
     });
     let options = AiCommand.options;
-    if (!options) return interaction.reply({
-        content: "Une erreur est survenue options indisponibles",
-        flags: MessageFlags.Ephemeral
-    });
     let optionsMapped = options.flatMap((option) => {
         if (option.type === ApplicationCommandOptionType.SubcommandGroup) {
             return option.options.map((subOption) => {
@@ -41,11 +38,11 @@ export default async function Help(command: CommandsBase, interaction: CommandIn
 
     }).join("\n");
 
-    let description = `Descriptions des commandes\n${optionsMapped}\nPour la commande de connexion </${AiCommand.name} login:${AiCommand.id}>, vous devrez d'abord allez sur [AI Horde](https://stablehorde.net/register) entrez un pseudo, puis copier la clé d'API vous aurez juste à la coller dans la modale qui s'ouvrira`;
+    let description = bt.__("Decriptions of commands\n%s\nFor the login command </%s login:%s>, you will first have to go to [AI Horde](https://stablehorde.net/register) enter a nickname, then copy the API key you will just have to paste it into the modal that will open", optionsMapped, AiCommand.name, AiCommand.id);
     interaction.reply({
         embeds: [
             new EmbedBuilder()
-                .setTitle("Liste des commandes AI")
+                .setTitle(bt.__({ phrase: "Help of AI", locale: interaction.locale }))
                 .setDescription(description)
         ],
     });

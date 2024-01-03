@@ -1,6 +1,7 @@
 import { ActionRowBuilder, Attachment, ButtonBuilder, ButtonStyle, CommandInteraction, CommandInteractionOptionResolver, EmbedBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import CommandsBase from "../baseCommands";
 import { GenerationInputKobold, HordeAsyncRequestStates, ModelInterrogationFormTypes } from "../../../internal_libs/aihorde";
+import { bt } from "../../../main";
 
 export default async function Interogate(command: CommandsBase, interaction: CommandInteraction) {    
     let i = await interaction.deferReply()
@@ -20,7 +21,7 @@ export default async function Interogate(command: CommandsBase, interaction: Com
     });
     }catch(err){
         i.edit({
-            content:"User not registered operation start with default token"
+            content:bt.__({ phrase: "User not registered, starting with default token", locale: interaction.locale }),
         });
     }
     
@@ -47,7 +48,7 @@ export default async function Interogate(command: CommandsBase, interaction: Com
 
     asked.then((asked) => {
         i.edit({
-            content: "Requête envoyé à l'IA, veuillez patienter...",
+            content: bt.__({ phrase: "Request sent to the AI, please wait...", locale: interaction.locale }),
         });
         let buttonCollector = i.createMessageComponentCollector({
             filter: (interactor) => {
@@ -61,7 +62,7 @@ export default async function Interogate(command: CommandsBase, interaction: Com
                     let DateEnd = Date.now();
                     clearInterval(intervalCheck);
                     let embed = new EmbedBuilder();
-                    embed.setTitle("Résultat de l'IA");
+                    embed.setTitle(bt.__({ phrase: "Interrogation result", locale: interaction.locale }));
                     embed.setDescription(stat.forms.flatMap((form) => {
                         if(form.result){
                             return Object.entries(form.result).flatMap((type) => {
@@ -84,15 +85,18 @@ export default async function Interogate(command: CommandsBase, interaction: Com
                         clearInterval(intervalCheck);
                         ia.deleteInterrogationRequest(asked.id);
                         i.edit({
-                            content: "Une erreur est survenue",
+                            content: bt.__({ phrase: "An error occured", locale: interaction.locale }),
                         });
                     }
-                    let processed = stat.state ? "Requête en cours de traitement : "+ stat.state : "Requête en attente de traitement";
+                    let processed = stat.state ? bt.__({ phrase: "Request in process : %s", locale: interaction.locale},stat.state) : bt.__({ phrase: "Request waiting for processing", locale: interaction.locale });
                     i.edit({
                         content: processed,
                         components: [
                             new ActionRowBuilder<ButtonBuilder>().addComponents(
-                                new ButtonBuilder().setCustomId("cancel").setLabel("Annuler").setStyle(ButtonStyle.Danger)
+                                new ButtonBuilder().setCustomId("cancel").setLabel(bt.__({
+                                    phrase: "Cancel",
+                                    locale: interaction.locale
+                                })).setStyle(ButtonStyle.Danger).setEmoji("🚫")
                             )
                         ]
                     });
@@ -101,7 +105,7 @@ export default async function Interogate(command: CommandsBase, interaction: Com
                 clearInterval(intervalCheck);
                 ia.deleteInterrogationRequest(asked.id);
                 i.edit({
-                    content: "Une erreur est survenue",
+                    content: bt.__({ phrase: "An error occured", locale: interaction.locale }),
                 });
             });
         },5000);
@@ -110,14 +114,14 @@ export default async function Interogate(command: CommandsBase, interaction: Com
             clearInterval(intervalCheck);
             ia.deleteInterrogationRequest(asked.id);
             interactor.update({
-                content: "Requête annulé",
+                content: bt.__({ phrase: "Request canceled", locale: interaction.locale }),
                 components: []
             });
         });
     }).catch((err) => {
         console.log(err);
         i.edit({
-            content: "Une erreur est survenue, requête impossible",
+            content: bt.__({ phrase: "An error occurred, request impossible", locale: interaction.locale }),
         });
     });
 

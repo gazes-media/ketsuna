@@ -1,6 +1,7 @@
 import { ApplicationCommandOption, ApplicationCommandOptionType, CommandInteraction, CommandInteractionOptionResolver, EmbedBuilder, MessageFlags } from "discord.js";
 import CommandsBase from "../baseCommands";
 import AdvancedImagine from "./advanced/imagine";
+import { bt } from "../../../main";
 
 export default async function Advanced(command: CommandsBase, interaction: CommandInteraction) {
     if(interaction.options instanceof CommandInteractionOptionResolver){
@@ -11,7 +12,7 @@ export default async function Advanced(command: CommandsBase, interaction: Comma
                 break;
             default:
                 interaction.reply({
-                    content: "Commande inconnue",
+                    content: bt.__({ phrase: "Unknown command", locale: interaction.locale }),
                     flags: MessageFlags.Ephemeral
                 });
                 break;

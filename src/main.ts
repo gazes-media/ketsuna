@@ -5,6 +5,8 @@ import fastify from "fastify";
 import { PrismaClient } from "@prisma/client";
 import { PrismaLibSQL } from '@prisma/adapter-libsql'
 import { createClient } from '@libsql/client'
+import { I18n } from "i18n";
+
 dotenv.config();
 export const bot = new Bot();
 const app = fastify();
@@ -24,3 +26,14 @@ prisma.$connect().then(() => {
 bot.database = prisma;
 bot.init();
 website.init();
+
+
+
+export const bt = new I18n();
+bt.configure({
+    defaultLocale: "en-GB",
+    directory: "./locales/bot_i18n",
+    autoReload: false,
+    updateFiles: false,
+  });
+
