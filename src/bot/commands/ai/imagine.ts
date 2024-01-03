@@ -83,7 +83,10 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
             // if preprompt is selected, we get a random model, and a random image from this model to use as prompt
                 if (preprompt) {
                     try {
-                        let lorasDatas = await ai.getLorasModels(loras);
+                        let lorasDatas = await ai.getLorasModels(loras,{
+                            limit: 1,
+                            page: 1,
+                        });
                         let firstItem = lorasDatas.items[0];
                         let randomModelVersion = firstItem.modelVersions[Math.floor(Math.random() * firstItem.modelVersions.length)];
                         let randomMetaImage = randomModelVersion.images[Math.floor(Math.random() * randomModelVersion.images.length)].meta;
