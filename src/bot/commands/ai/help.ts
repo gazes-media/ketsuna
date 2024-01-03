@@ -7,7 +7,7 @@ export default async function Help(command: CommandsBase, interaction: CommandIn
         return cmd.name === interaction.commandName;
     });
     if (!AiCommand) return interaction.reply({
-        content: bt.__({ phrase: "An error occurred, command not found", locale: interaction.locale }), 
+        content: bt.__({ phrase: "An error occurred, command not found", locale: interaction.locale }),
         flags: MessageFlags.Ephemeral
     });
     let options = AiCommand.options;
@@ -38,7 +38,9 @@ export default async function Help(command: CommandsBase, interaction: CommandIn
 
     }).join("\n");
 
-    let description = bt.__("Decriptions of commands\n%s\nFor the login command </%s login:%s>, you will first have to go to [AI Horde](https://stablehorde.net/register) enter a nickname, then copy the API key you will just have to paste it into the modal that will open", optionsMapped, AiCommand.name, AiCommand.id);
+    let description = bt.__({
+        phrase: "Decriptions of commands\n%s\nFor the login command </%s login:%s>, you will first have to go to [AI Horde](https://stablehorde.net/register) enter a nickname, then copy the API key you will just have to paste it into the modal that will open", locale: interaction.locale
+    }, optionsMapped, AiCommand.name, AiCommand.id);
     interaction.reply({
         embeds: [
             new EmbedBuilder()

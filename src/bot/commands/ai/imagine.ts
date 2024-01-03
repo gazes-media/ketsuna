@@ -169,14 +169,16 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                                     let files: AttachmentPayload[] = [];
                                     let processed = bt.__({ phrase: "Generation started..", locale: interaction.locale }) + "\n";
                                     if (stat.queue_position && stat.queue_position > 0) {
-                                        processed += bt.__({ phrase: "(Position in the queue: %s -", locale: interaction.locale }, String(stat.queue_position));
+                                        processed += bt.__({ phrase: "(Position in the queue: %s -", locale: interaction.locale }, String(stat.queue_position)) + "\n";
                                     }
                                     if (stat.waiting && stat.waiting > 0) {
-                                        processed += ` En attente: ${stat.waiting})\n`;
-                                        processed += bt.__({ phrase: "Waiting : %s", locale: interaction.locale }, String(stat.waiting));
+                                        processed += bt.__({ phrase: "Waiting : %s", locale: interaction.locale }, String(stat.waiting)) + "\n";
+                                    }
+                                    if(stat.finished && stat.finished > 0) {
+                                        processed += bt.__({ phrase: "Finished : %s", locale: interaction.locale }, String(stat.finished)) + "\n";
                                     }
                                     if (stat.processing && stat.processing > 0) {
-                                        processed += bt.__({ phrase: "Processing : %s", locale: interaction.locale }, String(stat.processing));
+                                        processed += bt.__({ phrase: "Processing : %s", locale: interaction.locale }, String(stat.processing)) + "\n";
                                         processed += bt.__({ phrase: "(Estimated waiting time: <t:%s:R>)", locale: interaction.locale }, String(parseInt((((Date.now() + (wait_time) * 1000)) / 1000).toString())));
                                     }
                                     if (stat.kudos && stat.kudos > 0) {
