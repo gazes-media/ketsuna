@@ -81,10 +81,12 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
             if (loras) {
                 try {
                     let lorasDatas = await ai.getLorasModels(loras);
-                    let firstImageMeta = lorasDatas.items[0].modelVersions[lorasDatas.items[0].modelVersions.length - 1].images[0].meta;
-                    prompt.params.steps = firstImageMeta.steps;
-                    prompt.params.cfg_scale = firstImageMeta.cfgScale;
-                    prompt.prompt = firstImageMeta.prompt + image.substring(0, 1024) + "### " + firstImageMeta.negativePrompt
+                    let firstItem = lorasDatas.items[0];
+                    let randomModelVersion = firstItem.modelVersions[Math.floor(Math.random() * firstItem.modelVersions.length)];
+                    let randomMetaImage = randomModelVersion.images[Math.floor(Math.random() * randomModelVersion.images.length)].meta;
+                    prompt.params.steps = randomMetaImage.steps;
+                    prompt.params.cfg_scale = randomMetaImage.cfgScale;
+                    prompt.prompt = randomMetaImage.prompt + image.substring(0, 1024) + "### " + randomMetaImage.negativePrompt
                 } catch (e) {
                     console.log("Loras was not found")
                 }
