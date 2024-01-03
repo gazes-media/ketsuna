@@ -1,5 +1,6 @@
 import { ActionRowBuilder, CommandInteraction, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import CommandsBase from "../baseCommands";
+import { bt } from "../../../main";
 
 export default async function Login(command: CommandsBase, interaction: CommandInteraction) {
     let userDatabase = await command.client.database.users.findFirst({
@@ -12,18 +13,18 @@ export default async function Login(command: CommandsBase, interaction: CommandI
         currentToken = command.client.decryptString(userDatabase.horde_token);
     }
     interaction.showModal(new ModalBuilder()
-        .setTitle("Connexion à l'IA Horde")
+        .setTitle(bt.__({ phrase: "Login to StableHorde", locale: interaction.locale }))
         .addComponents(
             new ActionRowBuilder<TextInputBuilder>()
                 .addComponents(
                     [new TextInputBuilder()
                         .setCustomId("token")
-                        .setPlaceholder("Token")
+                        .setPlaceholder(bt.__({ phrase: "Token from stablehorde.net", locale: interaction.locale }))
                         .setMaxLength(100)
                         .setStyle(TextInputStyle.Short)
                         .setValue(currentToken)
                         .setRequired(true)
-                        .setLabel("Token")
+                        .setLabel(bt.__({ phrase: "Token from stablehorde.net", locale: interaction.locale }))
                     ]
                 )
         )
@@ -41,7 +42,7 @@ export default async function Login(command: CommandsBase, interaction: CommandI
     let token = modal.fields.getTextInputValue("token")
     if (!token) {
         return modal.reply({
-            content: "Vous devez entrer un token",
+            content: bt.__({ phrase: "You must enter a token", locale: interaction.locale }),
             flags: MessageFlags.Ephemeral
         });
     }
@@ -55,7 +56,7 @@ export default async function Login(command: CommandsBase, interaction: CommandI
         });
     } catch (e) {
         modalInteraction.edit({
-            content: "Le token est invalide",
+            content: bt.__({ phrase: "Invalid token", locale: interaction.locale }),
         });
         return;
     }
@@ -69,11 +70,11 @@ export default async function Login(command: CommandsBase, interaction: CommandI
             }
         }).then(() => {
             modalInteraction.edit({
-                content: "Token mis à jour",
+                content: bt.__({ phrase: "Token updated", locale: interaction.locale }),
             });
         }).catch((err) => {
             modalInteraction.edit({
-                content: "Une erreur est survenue",
+                content: bt.__({ phrase: "An error occurred", locale: interaction.locale }),
             });
         });
     } else {
@@ -84,11 +85,11 @@ export default async function Login(command: CommandsBase, interaction: CommandI
             }
         }).then(() => {
             modalInteraction.edit({
-                content: "Token ajouté",
+                content: bt.__({ phrase: "Token added", locale: interaction.locale }),
             });
         }).catch((err) => {
             modalInteraction.edit({
-                content: "Une erreur est survenue",
+                content: bt.__({ phrase: "An error occurred", locale: interaction.locale }),
             });
         });
     }

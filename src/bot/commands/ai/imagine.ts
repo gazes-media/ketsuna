@@ -1,6 +1,7 @@
 import CommandsBase from "../baseCommands";
 import { APIActionRowComponent, APIButtonComponent, AttachmentPayload, ButtonBuilder, ButtonStyle, Colors, CommandInteraction, CommandInteractionOptionResolver, EmbedBuilder, MessageEditOptions, MessageFlags, TextChannel, codeBlock } from "discord.js";
 import { GenerationInput, ModelGenerationInputPostProcessingTypes, ModelGenerationInputStableSamplers } from "../../../internal_libs/aihorde";
+import { bt } from "../../../main";
 export default async function Imagine(command: CommandsBase, interaction: CommandInteraction) {
 
     let userDatabase = await command.client.database.users.findFirst({
@@ -16,14 +17,14 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
     let timeout = command.client.timeouts.get(interaction.commandName);
     if (!timeout) {
         interaction.reply({
-            content: "Une erreur est survenue",
+            content: bt.__({ phrase: "An error occured, please try again later", locale: interaction.locale }),
             flags: MessageFlags.Ephemeral
         });
         return;
     }
     if (timeout.has(interaction.user.id)) {
         interaction.reply({
-            content: "Vous devez attendre la fin de la génération précédente avant de pouvoir en lancer une nouvelle",
+            content: bt.__({ phrase: "You must wait the current generation before using this command again", locale: interaction.locale }),
             flags: MessageFlags.Ephemeral
         });
         return;
@@ -43,6 +44,7 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
         let negative_prompt = options.getString("negative_prompt") || "deformed, blurry,[bad anatomy], disfigured, poorly drawn face, [[[mutation]]], mutated, [[[extra arms]]], extra legs, ugly, horror, out of focus, depth of field, focal blur, bad quality, double body, [[double torso]], equine, bovine,[[feral]], [duo], [[canine]], creepy fingers, extra fingers, bad breasts, bad butt, split breasts, split butt, Blurry textures, blurry everything, creepy arms, bad arm anatomy, bad leg anatomy, bad finger anatomy, poor connection of the body with clothing and other things, poor quality character, poor quality body, Bad clothes quality, bad underwear, bad ears, poor eyes quality, poor quality of the background, poor facial quality, text.";
         let nsfw = options.getBoolean("nsfw") || false;
         let loras = options.getString("loras") || null;
+        let preprompt = options.getBoolean("preprompt") || false;
         if (image) {
             let textChannel = (interaction.channel instanceof TextChannel ? interaction.channel : null);
             let nsfwchannel = true;
@@ -79,17 +81,24 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
             }
 
             if (loras) {
-                try {
-                    let lorasDatas = await ai.getLorasModels(loras);
-                    let firstItem = lorasDatas.items[0];
-                    let randomModelVersion = firstItem.modelVersions[Math.floor(Math.random() * firstItem.modelVersions.length)];
-                    let randomMetaImage = randomModelVersion.images[Math.floor(Math.random() * randomModelVersion.images.length)].meta;
-                    prompt.params.steps = randomMetaImage.steps;
-                    prompt.params.cfg_scale = randomMetaImage.cfgScale;
-                    prompt.prompt = randomMetaImage.prompt + image.substring(0, 1024) + "### " + randomMetaImage.negativePrompt
-                } catch (e) {
-                    console.log("Loras was not found")
+                // if preprompt is selected, we get a random model, and a random image from this model to use as prompt
+                if (preprompt) {
+                    try {
+                        let lorasDatas = await ai.getLorasModels(loras, {
+                            limit: 1,
+                            page: 1,
+                        });
+                        let firstItem = lorasDatas.items[0];
+                        let randomModelVersion = firstItem.modelVersions[Math.floor(Math.random() * firstItem.modelVersions.length)];
+                        let randomMetaImage = randomModelVersion.images[Math.floor(Math.random() * randomModelVersion.images.length)].meta;
+                        prompt.params.steps = randomMetaImage.steps;
+                        prompt.params.cfg_scale = randomMetaImage.cfgScale;
+                        prompt.prompt = randomMetaImage.prompt + image.substring(0, 1024) + "### " + randomMetaImage.negativePrompt
+                    } catch (e) {
+                        console.log("Loras was not found")
+                    }
                 }
+
                 prompt.params.loras = [
                     {
                         name: loras,
@@ -147,8 +156,9 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                                             components: [
                                                 new ButtonBuilder()
                                                     .setCustomId("cancel")
-                                                    .setLabel("Annuler")
+                                                    .setLabel(bt.__({ phrase: "Cancel", locale: interaction.locale }))
                                                     .setStyle(ButtonStyle.Danger)
+                                                    .setEmoji("🚫")
                                                     .setDisabled(false)
                                                     .toJSON()
                                             ]
@@ -157,22 +167,23 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                                     // attachment
                                     let wait_time = stat.wait_time || 1;
                                     let files: AttachmentPayload[] = [];
-                                    let processed = "";
+                                    let processed = bt.__({ phrase: "Generation started..", locale: interaction.locale }) + "\n";
                                     if (stat.queue_position && stat.queue_position > 0) {
-                                        processed += ` (Position dans la file d'attente: ${stat.queue_position} -`;
+                                        processed += bt.__({ phrase: "(Position in the queue: %s -", locale: interaction.locale }, String(stat.queue_position));
                                     }
                                     if (stat.waiting && stat.waiting > 0) {
                                         processed += ` En attente: ${stat.waiting})\n`;
+                                        processed += bt.__({ phrase: "Waiting : %s", locale: interaction.locale }, String(stat.waiting));
                                     }
                                     if (stat.processing && stat.processing > 0) {
-                                        processed += `(En cours de traitement: ${stat.processing})\n`;
-                                        processed += `(Temps d'attente estimé: <t:${parseInt((((Date.now() + (wait_time) * 1000)) / 1000).toString())}:R>)\n`;
+                                        processed += bt.__({ phrase: "Processing : %s", locale: interaction.locale }, String(stat.processing));
+                                        processed += bt.__({ phrase: "(Estimated waiting time: <t:%s:R>)", locale: interaction.locale }, String(parseInt((((Date.now() + (wait_time) * 1000)) / 1000).toString())));
                                     }
                                     if (stat.kudos && stat.kudos > 0) {
-                                        processed += `(Kudos utilisés: ${stat.kudos})`;
+                                        processed += bt.__({ phrase: "Kudos used: %s", locale: interaction.locale }, String(stat.kudos));
                                     }
                                     let message: MessageEditOptions = {
-                                        content: `En cours de génération...\n ${processed}`,
+                                        content: processed,
                                         components: components
                                     }
                                     if (stat.finished && stat.finished > finished) {
@@ -209,7 +220,7 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                                 clearInterval(interval);
                                 command.client.timeouts.get(interaction.commandName)?.delete(interaction.user.id);
                                 interaction.editReply({
-                                    content: "Impossible de générer l'image, le model demandé n'est pas disponible",
+                                    content: bt.__({ phrase: "Request impossible, model not available", locale: interaction.locale }),
                                     components: []
                                 }).catch(e => {
                                     clearInterval(interval);
@@ -227,7 +238,7 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                     clearInterval(interval);
                     command.client.timeouts.get(interaction.commandName)?.delete(interaction.user.id);
                     componentInteraction.update({
-                        content: "Génération annulée",
+                        content: bt.__({ phrase: "Request canceled", locale: interaction.locale }),
                         components: []
                     });
                     command.client.aiHorde.deleteImageGenerationRequest(id);
@@ -263,12 +274,12 @@ export default async function Imagine(command: CommandsBase, interaction: Comman
                 command.client.timeouts.get(interaction.commandName)?.delete(interaction.user.id);
                 if (interaction.deferred) {
                     interaction.editReply({
-                        content: "Une erreur est survenue, le contenu demandé est peut-être trop long ou trop complexe, ou la demande est trop non éthique pour être traitée.",
+                        content: bt.__({ phrase: "An error occured, content too long or too complex, or request too unethical to be processed.", locale: interaction.locale }),
                         components: []
                     });
                 } else {
                     interaction.editReply({
-                        content: "Une erreur est survenue, le contenu demandé est peut-être trop long ou trop complexe, ou la demande est trop non éthique pour être traitée.",
+                        content: bt.__({ phrase: "An error occured, content too long or too complex, or request too unethical to be processed.", locale: interaction.locale }),
                         components: []
                     });
                 }

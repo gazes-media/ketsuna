@@ -1,5 +1,6 @@
 import { ActionRowBuilder, CommandInteraction, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import CommandsBase from "../baseCommands";
+import { bt } from "../../../main";
 
 export default async function Logout(command: CommandsBase, interaction: CommandInteraction) {
     try {
@@ -10,13 +11,13 @@ export default async function Logout(command: CommandsBase, interaction: Command
         });
         if (userDatabase) {
             interaction.reply({
-                content: "Vous avez été déconnecté",
+                content: bt.__({ phrase: "You have been logged out", locale: interaction.locale }),
                 flags: MessageFlags.Ephemeral
             });
         }
     } catch (err) {
         interaction.reply({
-            content: "Vous n'etiiez pas enregistré",
+            content: bt.__({ phrase: "You were not logged in", locale: interaction.locale }),
             flags: MessageFlags.Ephemeral
         });
     }

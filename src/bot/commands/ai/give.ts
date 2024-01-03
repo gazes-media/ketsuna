@@ -1,5 +1,6 @@
 import { ActionRowBuilder, CommandInteraction, CommandInteractionOptionResolver, EmbedBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import CommandsBase from "../baseCommands";
+import { bt } from "../../../main";
 
 export default async function Give(command: CommandsBase, interaction: CommandInteraction) {    
     let i = await interaction.deferReply()
@@ -10,7 +11,7 @@ export default async function Give(command: CommandsBase, interaction: CommandIn
         amount = options.getNumber("amount") || 1;
     }
     i.edit({
-        content: "Recherche en cours de l'utilisateur dans la base de donnée",
+        content: bt.__({ phrase: "Searching for the user in the database", locale: interaction.locale }),
     });
     let giverUser = await command.client.database.users.findFirst({
         where: {
@@ -18,10 +19,10 @@ export default async function Give(command: CommandsBase, interaction: CommandIn
         }
     });
     if (!giverUser) return i.edit({
-        content: "Vous n'êtes pas enregistré" + `, vous devez vous enregistrer avec la commande </${interaction.commandName} login:${interaction.commandId}>`,
+        content: bt.__({ phrase: "You must login to StableHorde using %s", locale: interaction.locale }, `</${interaction.commandName} login:${interaction.commandId}>`),
     });
     i.edit({
-        content: "Recherche en cours de l'utilisateur dans l'API",
+        content: bt.__({ phrase: "Searching for the user in the API", locale: interaction.locale }),
     });
     let token = command.client.decryptString(giverUser.horde_token);
     let ai = command.client.aiHorde;
@@ -30,7 +31,7 @@ export default async function Give(command: CommandsBase, interaction: CommandIn
             token
         });
         if(user.kudos < amount) return i.edit({
-            content: "Vous n'avez pas assez de kudos",
+            content: bt.__({ phrase: "You don't have enough kudos", locale: interaction.locale }),
         });
         // find the other user
         let receiverUser = await command.client.database.users.findFirst({
@@ -39,7 +40,7 @@ export default async function Give(command: CommandsBase, interaction: CommandIn
             }
         });
         if(!receiverUser) return i.edit({
-            content: "L'utilisateur n'est pas enregistré",
+            content: bt.__({ phrase: "The user is not registered", locale: interaction.locale }),
         });
         try{
             let receiverToken = command.client.decryptString(receiverUser.horde_token);
@@ -55,21 +56,21 @@ export default async function Give(command: CommandsBase, interaction: CommandIn
                 token: token
             }).then(async (content) => {
                 i.edit({
-                    content:`Vous avez donné ${content.transferred} kudos à <@${userSelected.id}> (${receiver.username})`
+                    content: bt.__({ phrase: "You have given %s kudos to %s", locale: interaction.locale }, String(content.transferred), `<@${userSelected.id}> (${receiver.username})`),
                 });
             }).catch(async (err) => {
                 i.edit({
-                    content: "Une erreur est survenue lors du transfert de kudos, réessayer",
+                    content: bt.__({ phrase: "An error occured", locale: interaction.locale }),
                 });
             });
         }catch(e){
             return i.edit({
-                content: "L'utilisateur cible n'est pas enregistré",
+                content: bt.__({ phrase: "The user is not registered", locale: interaction.locale }),
             });
         }
     } catch (e) {
         return i.edit({
-            content: "Le token est invalide vous devez vous reconnecter",
+            content: bt.__({ phrase: "Token invalid, you must login to StableHorde using %s", locale: interaction.locale }, `</${interaction.commandName} login:${interaction.commandId}>`),
         });
     }
 }

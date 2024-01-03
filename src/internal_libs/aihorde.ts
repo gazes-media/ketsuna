@@ -890,9 +890,17 @@ export class AIHorde {
         return await res.json() as Pick<GenerationPayloadStable, T>
     }
 
-    
-    async getLorasModels(name: string = "Anime"): Promise<CivitAIModels> {
-        const req = Centra(`https://civitai.com/api/v1/models?types=LORA&limit=12&query=${encodeURIComponent(name)}`, "GET")
+    /**
+     * 
+     * @param {string} name - The name of the model to search for
+     * @param {number} page - The page to search for (12 per page max) 
+     * @returns 
+     */
+    async getLorasModels(name: string = "Anime", options: GetLorasOptions = {
+        page: 1,
+        limit: 12
+    }): Promise<CivitAIModels> {
+        const req = Centra(`https://civitai.com/api/v1/models?types=LORA&limit=${options.limit}&query=${encodeURIComponent(name)}&page=${options.page}`, "GET")
         const res = await req.send()
         switch(res.statusCode) {
             case 401:
@@ -1647,6 +1655,12 @@ export interface AIHordeInitOptions {
     /** The client agent to pass in the requests. */
     client_agent?: string,
 }
+
+export interface GetLorasOptions {
+    page: number,
+    limit: number,
+}
+
 
 export interface AIHordeCacheConfiguration {
     /** How long to cache a specific user for in Milliseconds */
