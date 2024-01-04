@@ -130,6 +130,7 @@ export default async function AdvancedImagine(
             name: loras,
             model: 1,
             clip: 1,
+            inject_trigger: "any"
           },
         ];
       }

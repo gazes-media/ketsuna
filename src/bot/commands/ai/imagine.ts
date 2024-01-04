@@ -146,6 +146,7 @@ export default async function Imagine(
             name: loras,
             model: 1,
             clip: 1,
+            inject_trigger: "any"
           },
         ];
       }
