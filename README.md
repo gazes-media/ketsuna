@@ -63,7 +63,7 @@ The Discord bot is used to communicate with the Discord API. It currently has th
 The website is used to interact with the Discord bot. It currently has the following pages:
 / (The home page)  
 /cgu (The CGU page)
-/tos (The TOS page)
+/privacy (The TOS page) 
 
 ## Contributing
 
