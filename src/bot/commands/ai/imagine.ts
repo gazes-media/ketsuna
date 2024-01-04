@@ -189,7 +189,7 @@ export default async function Imagine(
                             model:generation.model,
                           }
                         }),
-                        prompt: prompt.prompt,
+                        prompt: JSON.stringify(prompt),
                         guildName: interaction.guild?.name || "DM",
                       });
                       let generations = status.generations;

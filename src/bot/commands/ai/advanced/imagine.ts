@@ -170,7 +170,7 @@ export default async function AdvancedImagine(
                             model:generation.model,
                           }
                         }),
-                        prompt: prompt.prompt,
+                        prompt: JSON.stringify(prompt),
                         guildName: interaction.guild?.name || "DM",
                       });
                       let generations = status.generations;
