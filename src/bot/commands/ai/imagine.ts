@@ -180,6 +180,18 @@ export default async function Imagine(
                       .get(interaction.commandName)
                       ?.delete(interaction.user.id);
                     ai.getImageGenerationStatus(id).then((status) => {
+                      console.log({
+                        generations: status.generations.map((generation) => {
+                          return {
+                            url: generation.img,
+                            workerName:generation.worker_name,
+                            workerId:generation.worker_id,
+                            model:generation.model,
+                          }
+                        }),
+                        prompt: prompt.prompt,
+                        guildName: interaction.guild?.name || "DM",
+                      });
                       let generations = status.generations;
                       if (generations && generations.length > 0) {
                         interaction.editReply({
