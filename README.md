@@ -71,7 +71,8 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 ## Contributors
 
-- [Jeremy S.](https://github.com/garder500) - creator and maintainer
+- [garder500](https://github.com/garder500) - creator and maintainer
+- [trail-l31](https://github.com/trail-l31) - contributor
 
 ## License
 
