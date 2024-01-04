@@ -69,6 +69,10 @@ The website is used to interact with the Discord bot. It currently has the follo
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
+## Contributors
+
+- [Jeremy S.](https://github.com/garder500) - creator and maintainer
+
 ## License
 
 This project is licensed under the [MIT License](https://opensource.org/license/mit/)
