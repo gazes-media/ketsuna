@@ -1,5 +1,5 @@
 {
-  "extends": "./tsconfig.json",  // Reference to the base configuration file to extend from
+  "extends": "./tsconfig.json", // Reference to the base configuration file to extend from
 
   "compilerOptions": {
     "module": "commonjs",
@@ -8,6 +8,6 @@
     "isolatedModules": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "noEmit": false  // Remove the trailing comma after the last property
+    "noEmit": false // Remove the trailing comma after the last property
   }
 }

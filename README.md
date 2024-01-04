@@ -22,7 +22,7 @@ The Front-end is built with [React](https://reactjs.org/) and [Next.js](https://
 1. Clone the repository
 2. Install the dependencies with `pnpm install`
 3. Create a `.env` file in the root directory and fill it with the following variables:
-    
+
 ```env
     # The port the server will listen on
     PORT=3000
@@ -45,7 +45,8 @@ The Front-end is built with [React](https://reactjs.org/) and [Next.js](https://
 4. Build the project with `pnpm build`
 5. Restart the project with `pm2 restart your-app-name`
 
-Or if you don't want to "build" the project : 
+Or if you don't want to "build" the project :
+
 1. Change the branch to `prod` with `git checkout prod`
 2. Same as above but without the `pnpm build` step
 
@@ -60,7 +61,7 @@ The Discord bot is used to communicate with the Discord API. It currently has th
 ### Website
 
 The website is used to interact with the Discord bot. It currently has the following pages:
-/ (The home page)   
+/ (The home page)  
 /cgu (The CGU page)
 /tos (The TOS page)
 

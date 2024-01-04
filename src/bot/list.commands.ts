@@ -1,2 +1,2 @@
-export * from "./commands/ai"
-export * from "./commands/deleteMessage"
+export * from "./commands/ai";
+export * from "./commands/deleteMessage";
