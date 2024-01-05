@@ -63,9 +63,33 @@ export default class Bot extends Client {
   public async init() {
     console.log("Bot is starting...");
     this.login(process.env.DISCORD_TOKEN);
-    this.on("ready", () => {
+    this.on(Events.ClientReady, () => {
       console.log("Bot is ready!");
       this.loadCommands();
+      if (this.application.id === "1100859965616427068") {
+        this.on(Events.EntitlementCreate, async (entitlement) => {
+          let user = await entitlement.fetchUser()
+          // send message on support server
+          this.channels.fetch("1174557566773252146").then((channel) => {
+            if(!channel.isTextBased()) return;
+            channel.send({
+              content: `<@${entitlement.userId}> (${user.tag}) has purchased Ketsuna Premium!`,
+            });
+          });
+  
+          // send dm to user
+          user.send({
+            content: `If you are not yet in the support server, please join it here: https://discord.gg/wqvBzHe8YQ \n\n This way we can give you your Rewards for suscribing to Ketsuna Premium!`,
+            embeds: [
+                {
+                  title: "Join the Support Server",
+                  url: "https://discord.gg/wqvBzHe8YQ",
+                  description: `Thank you for purchasing Ketsuna Premium! You need to be Logged in to the bot to use it.\nPlease use </ai login:${this.commands.get("ai").command.id} to login to the bot.`
+                }
+              ]
+          })
+        });
+      }
       setTimeout(() => {
         this.application.commands.fetch().then((commands) => {
           commands.forEach((command) => {
@@ -100,30 +124,6 @@ export default class Bot extends Client {
         }
       }
     });
-    if (this.application.id === "1100859965616427068") {
-      this.on(Events.EntitlementCreate, async (entitlement) => {
-        let user = await entitlement.fetchUser()
-        // send message on support server
-        this.channels.fetch("1174557566773252146").then((channel) => {
-          if(!channel.isTextBased()) return;
-          channel.send({
-            content: `<@${entitlement.userId}> (${user.tag}) has purchased Ketsuna Premium!`,
-          });
-        });
-
-        // send dm to user
-        user.send({
-          content: `If you are not yet in the support server, please join it here: https://discord.gg/wqvBzHe8YQ \n\n This way we can give you your Rewards for suscribing to Ketsuna Premium!`,
-          embeds: [
-              {
-                title: "Join the Support Server",
-                url: "https://discord.gg/wqvBzHe8YQ",
-                description: `Thank you for purchasing Ketsuna Premium! You need to be Logged in to the bot to use it.\nPlease use </ai login:${this.commands.get("ai").command.id} to login to the bot.`
-              }
-            ]
-        })
-      });
-    }
   }
 
   public loadCommands() {
