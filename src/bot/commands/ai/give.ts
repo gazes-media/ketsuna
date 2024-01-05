@@ -1,6 +1,7 @@
 import {
   CommandInteraction,
   CommandInteractionOptionResolver,
+  User,
 } from "discord.js";
 import CommandsBase from "../baseCommands";
 import { bt } from "../../../main";
@@ -11,11 +12,18 @@ export default async function Give(
 ) {
   let i = await interaction.deferReply();
   let options = interaction.options;
-  let userSelected = options.getUser("user", true);
+  let userSelected: User;
   let amount = 1;
   if (options instanceof CommandInteractionOptionResolver) {
+    userSelected = options.getUser("user");
     amount = options.getNumber("amount") || 1;
   }
+  if(!userSelected) return i.edit({
+    content: bt.__({
+      phrase: "You must select a user",
+      locale: interaction.locale,
+    }),
+  });
   i.edit({
     content: bt.__({
       phrase: "Searching for the user in the database",
