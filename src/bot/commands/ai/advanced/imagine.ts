@@ -265,7 +265,7 @@ export default async function AdvancedImagine(
                             ((Date.now() + wait_time * 1000) / 1000).toString(),
                           ),
                         ),
-                      );
+                      ) + "\n";
                     }
                     if (stat.kudos && stat.kudos > 0) {
                       processed += bt.__(

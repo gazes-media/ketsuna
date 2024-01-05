@@ -75,6 +75,10 @@ export default async function Imagine(
       "deformed, blurry,[bad anatomy], disfigured, poorly drawn face, [[[mutation]]], mutated, [[[extra arms]]], extra legs, ugly, horror, out of focus, depth of field, focal blur, bad quality, double body, [[double torso]], equine, bovine,[[feral]], [duo], [[canine]], creepy fingers, extra fingers, bad breasts, bad butt, split breasts, split butt, Blurry textures, blurry everything, creepy arms, bad arm anatomy, bad leg anatomy, bad finger anatomy, poor connection of the body with clothing and other things, poor quality character, poor quality body, Bad clothes quality, bad underwear, bad ears, poor eyes quality, poor quality of the background, poor facial quality, text.";
     let nsfw = options.getBoolean("nsfw") || false;
     let loras = options.getString("loras") || null;
+    let loras2 = options.getString("loras_2") || null;
+    let loras3 = options.getString("loras_3") || null;
+    let loras4 = options.getString("loras_4") || null;
+    let loras5 = options.getString("loras_5") || null;
     let preprompt = options.getBoolean("preprompt") || false;
     if (image) {
       let textChannel =
@@ -106,12 +110,14 @@ export default async function Imagine(
         nsfw: nsfwchannel ? (nsfw ? true : false) : false,
         shared: true,
       };
-
-      if (loras) {
+      let lorasList = [loras, loras2, loras3, loras4, loras5].filter((loras) => {
+        return loras !== null;
+      });
+      if (lorasList.length > 0) {
         // if preprompt is selected, we get a random model, and a random image from this model to use as prompt
         if (preprompt) {
           try {
-            let lorasDatas = await command.client.getLorasModel(loras);
+            let lorasDatas = await command.client.getLorasModel(lorasList[0]);
             let randomModelVersion =
             lorasDatas.modelVersions[
                 Math.floor(Math.random() * lorasDatas.modelVersions.length)
@@ -132,14 +138,14 @@ export default async function Imagine(
           }
         }
 
-        prompt.params.loras = [
-          {
+        prompt.params.loras = lorasList.map((loras, index) => {
+          return {
             name: loras,
-            model: 1,
-            clip: 1,
-            inject_trigger: "any"
-          },
-        ];
+            model: index,
+            clip: index+1,
+            inject_trigger: "any",
+          };
+        });
       }
       if (model.toLowerCase().includes("sdxl")) {
         prompt.params.hires_fix = false;
@@ -278,7 +284,7 @@ export default async function Imagine(
                             ((Date.now() + wait_time * 1000) / 1000).toString(),
                           ),
                         ),
-                      );
+                      ) + "\n";
                     }
                     if (stat.kudos && stat.kudos > 0) {
                       processed += bt.__(

@@ -55,6 +55,30 @@ const commandData = new SlashCommandBuilder()
             fr: "loras",
           })
           .setAutocomplete(true),
+      ).addStringOption((option) =>
+        option.setName("loras_2").setDescription("Loras to use").setRequired(false).setDescriptionLocalizations({
+          fr: "Loras à utiliser",
+        }).setNameLocalizations({
+          fr: "second_loras",
+        }).setAutocomplete(true),
+      ).addStringOption((option) =>
+        option.setName("loras_3").setDescription("Loras to use").setRequired(false).setDescriptionLocalizations({
+          fr: "Loras à utiliser",
+        }).setNameLocalizations({
+          fr: "third_loras",
+        }).setAutocomplete(true),
+      ).addStringOption((option) =>
+        option.setName("loras_4").setDescription("Loras to use").setRequired(false).setDescriptionLocalizations({
+          fr: "Loras à utiliser",
+        }).setNameLocalizations({
+          fr: "fourth_loras",
+        }).setAutocomplete(true),
+      ).addStringOption((option) =>
+        option.setName("loras_5").setDescription("Loras to use").setRequired(false).setDescriptionLocalizations({
+          fr: "Loras à utiliser",
+        }).setNameLocalizations({
+          fr: "fifth_loras",
+        }).setAutocomplete(true),
       )
       .addBooleanOption((option) =>
         option
@@ -503,41 +527,61 @@ export class IaCommand extends CommandsBase {
           });
           break;
         case "loras":
-          if (!isNaN(Number(autocomplete.value))) {
-            this.client.getLorasModel(autocomplete.value).then((Loras) => {
-            if (Loras) {
-              interaction.respond([
-                {
-                  name: Loras.name,
-                  value: String(Loras.id),
-                }
-              ])
-            }
-            });
-          } else {
-            this.client.getLorasModels({
-              name: autocomplete.value,
-              limit: 5
-            }).then((Loras) => {
-            if(!Loras) return interaction.respond([]);
-            console.log(Loras.items);
-            interaction
-              .respond(
-                Loras.items.map((model) => {
-                  return {
-                    name: model.name.substring(0, 60),
-                    value: String(model.id),
-                  };
-                }),
-              )
-              .catch((err) => {
-                console.log(err);
-                // ignore Too Much Time passed
-              });
-            });
-          }
+          lorasLookup(autocomplete.value, interaction, this.client);
+          break;
+        case "loras_2":
+          lorasLookup(autocomplete.value, interaction, this.client);
+          break;
+        case "loras_3":
+          lorasLookup(autocomplete.value, interaction, this.client);
+          break;
+        case "loras_4":
+          lorasLookup(autocomplete.value, interaction, this.client);
+          break;
+        case "loras_5":
+          lorasLookup(autocomplete.value, interaction, this.client);
           break;
       }
     }
+  }
+}
+
+
+function lorasLookup(value: string, interaction: AutocompleteInteraction, client: Bot) {
+  if (!isNaN(Number(value))) {
+    client.getLorasModel(value).then((Loras) => {
+        interaction.respond([
+          {
+            name: Loras.name,
+            value: String(Loras.id),
+          }
+        ]).catch((_) => {});
+    }).catch((err) => {
+      interaction.respond([{
+        name:"No loras found",
+        value: "0"
+      }]).catch((_) => {});
+    });
+  } else {
+    client.getLorasModels({
+      name: value,
+      limit: 5
+    }).then((Loras) => {
+      interaction
+        .respond(
+          Loras.items.map((model) => {
+            return {
+              name: model.name,
+              value: String(model.id),
+            };
+          }),
+        )
+        .catch((_) => {});
+    }).catch((err) => {
+       interaction.respond([{
+        name:"No loras found",
+        value: "0"
+      }]).catch((_) => {});
+    });
   }
 }
