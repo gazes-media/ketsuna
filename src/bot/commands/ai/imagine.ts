@@ -89,13 +89,12 @@ export default async function Imagine(
       let prompt: ImageGenerationInput = {
         prompt: image + "### " + negative_prompt,
         params: {
-          sampler_name: ModelGenerationInputStableSamplers.k_dpm_adaptive,
+          sampler_name: ModelGenerationInputStableSamplers.k_euler,
           cfg_scale: 30,
           height: 512,
           width: 512,
           post_processing: [
             ModelGenerationInputPostProcessingTypes.RealESRGAN_x4plus,
-            ModelGenerationInputPostProcessingTypes.NMKD_Siax
           ],
           clip_skip: 2,
           facefixer_strength: 1,

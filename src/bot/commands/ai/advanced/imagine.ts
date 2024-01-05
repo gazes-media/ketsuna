@@ -104,7 +104,6 @@ export default async function AdvancedImagine(
           width: width,
           post_processing: [
             ModelGenerationInputPostProcessingTypes.RealESRGAN_x4plus,
-            ModelGenerationInputPostProcessingTypes.GFPGAN,
           ],
           karras: true,
           tiling: false,
