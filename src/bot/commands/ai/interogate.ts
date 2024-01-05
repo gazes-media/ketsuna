@@ -16,7 +16,7 @@ import {
   GenerationInputKobold,
   HordeAsyncRequestStates,
   ModelInterrogationFormTypes,
-} from "../../../internal_libs/aihorde";
+} from "@zeldafan0225/ai_horde";
 import { bt } from "../../../main";
 
 export default async function Interogate(

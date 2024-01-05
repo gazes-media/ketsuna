@@ -11,7 +11,7 @@ import {
   TextInputStyle,
 } from "discord.js";
 import CommandsBase from "../baseCommands";
-import { GenerationInputKobold } from "../../../internal_libs/aihorde";
+import { GenerationInputKobold } from "@zeldafan0225/ai_horde";
 import { bt } from "../../../main";
 
 export default async function Ask(

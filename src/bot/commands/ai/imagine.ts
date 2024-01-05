@@ -15,10 +15,10 @@ import {
   codeBlock,
 } from "discord.js";
 import {
-  GenerationInput,
+  ImageGenerationInput,
   ModelGenerationInputPostProcessingTypes,
   ModelGenerationInputStableSamplers,
-} from "../../../internal_libs/aihorde";
+} from "@zeldafan0225/ai_horde";
 import { bt } from "../../../main";
 export default async function Imagine(
   command: CommandsBase,
@@ -86,24 +86,20 @@ export default async function Imagine(
       command.client.timeouts
         .get(interaction.commandName)
         ?.set(interaction.user.id, true);
-      let prompt: GenerationInput = {
+      let prompt: ImageGenerationInput = {
         prompt: image + "### " + negative_prompt,
         params: {
           sampler_name: ModelGenerationInputStableSamplers.k_dpm_adaptive,
-          cfg_scale: 7,
-          denoising_strength: 0.75,
+          cfg_scale: 30,
           height: 512,
           width: 512,
           post_processing: [
             ModelGenerationInputPostProcessingTypes.RealESRGAN_x4plus,
-            ModelGenerationInputPostProcessingTypes.GFPGAN,
+            ModelGenerationInputPostProcessingTypes.NMKD_Siax
           ],
-          karras: true,
-          tiling: false,
-          hires_fix: true,
-          clip_skip: 3,
-          facefixer_strength: 0.75,
-          steps: 25,
+          clip_skip: 2,
+          facefixer_strength: 1,
+          steps: 20,
           n: 4,
         },
         censor_nsfw: nsfwchannel ? (nsfw ? false : true) : true,
@@ -116,14 +112,10 @@ export default async function Imagine(
         // if preprompt is selected, we get a random model, and a random image from this model to use as prompt
         if (preprompt) {
           try {
-            let lorasDatas = await ai.getLorasModels(loras, {
-              limit: 1,
-              page: 1,
-            });
-            let firstItem = lorasDatas.items[0];
+            let lorasDatas = await command.client.getLorasModel(loras);
             let randomModelVersion =
-              firstItem.modelVersions[
-                Math.floor(Math.random() * firstItem.modelVersions.length)
+            lorasDatas.modelVersions[
+                Math.floor(Math.random() * lorasDatas.modelVersions.length)
               ];
             let randomMetaImage =
               randomModelVersion.images[
@@ -152,6 +144,8 @@ export default async function Imagine(
       }
       if (model.toLowerCase().includes("sdxl")) {
         prompt.params.hires_fix = false;
+      }else{
+        prompt.params.hires_fix = true;
       }
       ai.postAsyncImageGenerate(prompt, {
         token: defaultToken,

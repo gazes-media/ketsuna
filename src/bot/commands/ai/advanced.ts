@@ -1,9 +1,6 @@
 import {
-  ApplicationCommandOption,
-  ApplicationCommandOptionType,
   CommandInteraction,
   CommandInteractionOptionResolver,
-  EmbedBuilder,
   MessageFlags,
 } from "discord.js";
 import CommandsBase from "../baseCommands";

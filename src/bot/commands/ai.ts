@@ -15,7 +15,7 @@ import Info from "./ai/info";
 import Ask from "./ai/ask";
 import Logout from "./ai/logout";
 import Interogate from "./ai/interogate";
-import { ModelGenerationInputStableSamplers } from "../../internal_libs/aihorde";
+import { ModelGenerationInputStableSamplers } from "@zeldafan0225/ai_horde";
 import Advanced from "./ai/advanced";
 import Give from "./ai/give";
 import { bt } from "../../main";
@@ -479,46 +479,64 @@ export class IaCommand extends CommandsBase {
     let options = interaction.options;
     if (options instanceof CommandInteractionOptionResolver) {
       let autocomplete = options.getFocused(true);
-      if (autocomplete.name === "model") {
-        this.client.aiHorde.getModels().then((models) => {
-          let modelsFiltereds = models;
-          if (autocomplete.value.length > 0) {
-            modelsFiltereds = models.filter((modelFilter) => {
-              if (!modelFilter?.name) return false;
-              return modelFilter?.name
-                .toLowerCase()
-                .includes(autocomplete.value.toLowerCase());
+      switch (autocomplete.name) {
+        case "model":
+          this.client.aiHorde.getModels().then((models) => {
+            let modelsFiltereds = models;
+            if (autocomplete.value.length > 0) {
+              modelsFiltereds = models.filter((modelFilter) => {
+                if (!modelFilter?.name) return false;
+                return modelFilter?.name
+                  .toLowerCase()
+                  .includes(autocomplete.value.toLowerCase());
+              });
+            }
+            modelsFiltereds = modelsFiltereds.slice(0, 24);
+            let optionsMapped: ApplicationCommandOptionChoiceData[] =
+              modelsFiltereds.map((model) => {
+                return {
+                  name: `${model.name} (Queue ${model.queued} - ${model.count} workers)`,
+                  value: model.name as string,
+                };
+              });
+            interaction.respond(optionsMapped);
+          });
+          break;
+        case "loras":
+          if (!isNaN(Number(autocomplete.value))) {
+            this.client.getLorasModel(autocomplete.value).then((Loras) => {
+            if (Loras) {
+              interaction.respond([
+                {
+                  name: Loras.name,
+                  value: String(Loras.id),
+                }
+              ])
+            }
             });
-          }
-          modelsFiltereds = modelsFiltereds.slice(0, 24);
-          let optionsMapped: ApplicationCommandOptionChoiceData[] =
-            modelsFiltereds.map((model) => {
-              return {
-                name: `${model.name} (Queue ${model.queued} - ${model.count} workers)`,
-                value: model.name as string,
-              };
-            });
-          interaction.respond(optionsMapped);
-        });
-      } else if (autocomplete.name === "loras") {
-        this.client.aiHorde
-          .getLorasModels(autocomplete.value)
-          .then((models) => {
+          } else {
+            this.client.getLorasModels({
+              name: autocomplete.value,
+              limit: 5
+            }).then((Loras) => {
+            if(!Loras) return interaction.respond([]);
+            console.log(Loras.items);
             interaction
               .respond(
-                models.items.map((model) => {
+                Loras.items.map((model) => {
                   return {
-                    name: `${model.name.substring(0, 60)} ${
-                      model.nsfw ? "(NSFW)" : ""
-                    }`,
-                    value: model.name,
+                    name: model.name.substring(0, 60),
+                    value: String(model.id),
                   };
                 }),
               )
-              .catch((_) => {
+              .catch((err) => {
+                console.log(err);
                 // ignore Too Much Time passed
               });
-          });
+            });
+          }
+          break;
       }
     }
   }

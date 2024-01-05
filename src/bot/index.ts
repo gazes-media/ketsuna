@@ -1,18 +1,17 @@
 import {
   ActivityType,
   Client,
-  ContextMenuCommandInteraction,
   Events,
   GatewayIntentBits,
-  MessageContextMenuCommandInteraction,
-  ModalSubmitInteraction,
   Partials,
 } from "discord.js";
-import AIHorde from "../internal_libs/aihorde";
+import { AIHorde } from "@zeldafan0225/ai_horde";
 import * as commandList from "./list.commands";
 import CommandsBase from "./commands/baseCommands";
 import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
+import { CivitAIModels, GetLorasOptions } from "./types/civitai";
+
 export default class Bot extends Client {
   timeouts: Map<string, Map<string, boolean>> = new Map<
     string,
@@ -59,6 +58,8 @@ export default class Bot extends Client {
     this.security_key = Buffer.from(key, "utf-8");
   }
 
+
+
   public async init() {
     console.log("Bot is starting...");
     this.login(process.env.DISCORD_TOKEN);
@@ -99,6 +100,30 @@ export default class Bot extends Client {
         }
       }
     });
+    if (this.application.id === "1100859965616427068") {
+      this.on(Events.EntitlementCreate, async (entitlement) => {
+        let user = await entitlement.fetchUser()
+        // send message on support server
+        this.channels.fetch("1174557566773252146").then((channel) => {
+          if(!channel.isTextBased()) return;
+          channel.send({
+            content: `<@${entitlement.userId}> (${user.tag}) has purchased Ketsuna Premium!`,
+          });
+        });
+
+        // send dm to user
+        user.send({
+          content: `If you are not yet in the support server, please join it here: https://discord.gg/wqvBzHe8YQ \n\n This way we can give you your Rewards for suscribing to Ketsuna Premium!`,
+          embeds: [
+              {
+                title: "Join the Support Server",
+                url: "https://discord.gg/wqvBzHe8YQ",
+                description: `Thank you for purchasing Ketsuna Premium! You need to be Logged in to the bot to use it.\nPlease use </ai login:${this.commands.get("ai").command.id} to login to the bot.`
+              }
+            ]
+        })
+      });
+    }
   }
 
   public loadCommands() {
@@ -132,5 +157,35 @@ export default class Bot extends Client {
     const cipher = crypto.createCipheriv("aes-256-cbc", this.security_key, iv);
     const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
     return encrypted.toString("hex") + ":" + iv.toString("hex");
+  }
+
+  /**
+ *
+ * @param {string} name - The name of the model to search for
+ * @param {number} page - The page to search for (12 per page max)
+ * @returns
+ */
+  async getLorasModels(
+    options: GetLorasOptions = {},
+  ): Promise<CivitAIModels | null> {
+    let CivitURL = new URL("https://civitai.com/api/v1/models");
+    CivitURL.searchParams.append("types", "LORA");
+    CivitURL.searchParams.append("primaryFileOnly", "true");
+    if (options.limit) CivitURL.searchParams.append("limit", options.limit.toString());
+    if (options.page) CivitURL.searchParams.append("page", options.page.toString());
+    if (options.name) CivitURL.searchParams.append("query", encodeURIComponent(options.name));
+
+    const req = await fetch(CivitURL.toString());
+    const res = await req.json()
+    if (res.error) return null;
+    return res as CivitAIModels;
+  }
+
+  async getLorasModel(id: string) {
+    let CivitURL = new URL(`https://civitai.com/api/v1/models/${id}`);
+    const req = await fetch(CivitURL.toString());
+    const res = await req.json()
+    if (res.error) return null;
+    return res as CivitAIModels["items"][0];
   }
 }

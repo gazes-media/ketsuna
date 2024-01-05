@@ -1,12 +1,6 @@
 import {
-  ActionRowBuilder,
   CommandInteraction,
   CommandInteractionOptionResolver,
-  EmbedBuilder,
-  MessageFlags,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
 } from "discord.js";
 import CommandsBase from "../baseCommands";
 import { bt } from "../../../main";

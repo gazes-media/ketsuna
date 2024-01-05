@@ -15,10 +15,10 @@ import {
   codeBlock,
 } from "discord.js";
 import {
-  GenerationInput,
+  ImageGenerationInput,
   ModelGenerationInputPostProcessingTypes,
   ModelGenerationInputStableSamplers,
-} from "../../../../internal_libs/aihorde";
+} from "@zeldafan0225/ai_horde";
 import { bt } from "../../../../main";
 export default async function AdvancedImagine(
   command: CommandsBase,
@@ -94,10 +94,10 @@ export default async function AdvancedImagine(
       command.client.timeouts
         .get(interaction.commandName)
         ?.set(interaction.user.id, true);
-      let prompt: GenerationInput = {
+      let prompt: ImageGenerationInput = {
         prompt: image + "### " + negative_prompt,
         params: {
-          sampler_name: sampler_name as ModelGenerationInputStableSamplers,
+          sampler_name: sampler_name as ImageGenerationInput["params"]["sampler_name"],
           cfg_scale: 7,
           denoising_strength: 0.75,
           height: height,
