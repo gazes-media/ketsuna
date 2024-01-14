@@ -12,6 +12,38 @@ datasource db {
 }
 
 model Users {
-  id        String   @id @unique 
-  horde_token String @unique
+  id            String        @id @unique
+  horde_token   String        @unique
+  horde_config  AIHordeConfig @relation(fields: [hordeConfigId], references: [id])
+  hordeConfigId String
+}
+
+model AIHordeConfig {
+  id                 String  @id @unique
+  userId             String
+  nsfw               Boolean @default(false)
+  definedPrompt      String  @default("{p}###{ng}")
+  loras              Loras[]
+  cfg_scale          Int     @default(7)
+  height             Int     @default(512)
+  width              Int     @default(512)
+  steps              Int     @default(25)
+  model              String  @default("Anything Diffusion")
+  facefixer_strength Float   @default(1)
+  sampler            String  @default("k_euler")
+  clip_skip          Int     @default(2)
+  upscaller          String  @default("RealESRGAN_x4plus")
+  preprompt_loras    Boolean @default(false)
+  postProcessor      String  
+  Users              Users[]
+}
+
+model Loras {
+  id              String        @id @unique
+  loras_id        String
+  force           String
+  clip            String
+  ignore          String
+  aiHordeConfig   AIHordeConfig @relation(fields: [aiHordeConfigId], references: [id])
+  aiHordeConfigId String
 }
