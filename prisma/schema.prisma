@@ -12,15 +12,15 @@ datasource db {
 }
 
 model Users {
-  id            String        @id @unique
-  horde_token   String        @unique
-  horde_config  AIHordeConfig @relation(fields: [hordeConfigId], references: [id])
-  hordeConfigId String
+  id            String         @id @unique
+  horde_token   String         @unique
+  horde_config  AIHordeConfig? @relation(fields: [hordeConfigId], references: [id])
+  hordeConfigId String?
 }
 
 model AIHordeConfig {
   id                 String  @id @unique
-  userId             String
+  userId             String  @unique
   nsfw               Boolean @default(false)
   definedPrompt      String  @default("{p}###{ng}")
   loras              Loras[]
@@ -34,16 +34,16 @@ model AIHordeConfig {
   clip_skip          Int     @default(2)
   upscaller          String  @default("RealESRGAN_x4plus")
   preprompt_loras    Boolean @default(false)
-  postProcessor      String  
+  postProcessor      String  @default("")
   Users              Users[]
 }
 
 model Loras {
   id              String        @id @unique
   loras_id        String
-  force           String
-  clip            String
-  ignore          String
+  force           Float         @default(1)
+  clip            Float         @default(1)
+  ignore          Boolean       @default(false)
   aiHordeConfig   AIHordeConfig @relation(fields: [aiHordeConfigId], references: [id])
   aiHordeConfigId String
 }
