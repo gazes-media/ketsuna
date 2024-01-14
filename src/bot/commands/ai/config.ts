@@ -2,6 +2,7 @@ import {
     ActionRowBuilder,
     Colors,
     CommandInteraction,
+    CommandInteractionOptionResolver,
     EmbedBuilder,
     InteractionResponse,
     MessageFlags,
@@ -11,141 +12,117 @@ import {
     TextInputBuilder,
     TextInputStyle,
     WebhookMessageEditOptions,
-  } from "discord.js";
-  import CommandsBase from "../baseCommands";
-  import { bt } from "../../../main";
+} from "discord.js";
+import CommandsBase from "../baseCommands";
+import { bt } from "../../../main";
 import Login from "./login";
-  
-  export default async function Config(
+import { ModelGenerationInputPostProcessingTypes, ModelGenerationInputStableSamplers } from "@zeldafan0225/ai_horde";
+
+export default async function Config(
     command: CommandsBase,
     interaction: CommandInteraction,
-  ) {
-    let userDatabase = await command.client.database.users.findFirst({
-      where: {
-        id: interaction.user.id,
-      },
-      select: {
-        horde_config: {
-            select: {
-                definedPrompt: true,
-                model: true,
-                loras: true,
-            }
-        },
-        horde_token: true,
-        },
-    });
-    let loginInteraction: InteractionResponse<boolean> | undefined;
-    let currentToken = "";
-    if (userDatabase) {
-      currentToken = command.client.decryptString(userDatabase.horde_token);
-    }else{
-        loginInteraction = await Login(command, interaction);
-    }
+) {
+    if (interaction.isCommand()) {
+        let options = interaction.options;
+        if (options instanceof CommandInteractionOptionResolver) {
+            // get every options from the command
+            let model = options.getString("model");
+            let nsfw = options.getBoolean("nsfw") || false;
+            let loras = options.getString("loras") || null;
+            let loras2 = options.getString("loras_2") || null;
+            let loras3 = options.getString("loras_3") || null;
+            let loras4 = options.getString("loras_4") || null;
+            let loras5 = options.getString("loras_5") || null;
+            let definedPrompt = options.getString("preprompt") || "{p}###{ng}deformed, blurry,[bad anatomy], disfigured, poorly drawn face, [[[mutation]]], mutated, [[[extra arms]]], extra legs, ugly, horror, out of focus, depth of field, focal blur, bad quality, double body, [[double torso]], equine, bovine,[[feral]], [duo], [[canine]], creepy fingers, extra fingers, bad breasts, bad butt, split breasts, split butt, Blurry textures, blurry everything, creepy arms, bad arm anatomy, bad leg anatomy, bad finger anatomy, poor connection of the body with clothing and other things, poor quality character, poor quality body, Bad clothes quality, bad underwear, bad ears, poor eyes quality, poor quality of the background, poor facial quality, text.";
+            let preprompt_loras = options.getBoolean("loras_preprompt") || false;
+            let cfg_scale = options.getNumber("cfg_scale") || 7;
+            let sampler = options.getString("sampler") || ModelGenerationInputStableSamplers.k_euler;
+            let gen_numbers = options.getNumber("numbers") || 4;
+            let steps = options.getNumber("step") || 25;
+            let clip_skip = options.getNumber("clip_skip") || 3;
+            let height = options.getNumber("height") || 512;
+            let width = options.getNumber("width") || 512;
+            let upscaller = options.getString("upscaler") || ModelGenerationInputPostProcessingTypes.RealESRGAN_x4plus;
+            let sharedKey = options.getString("shared_key") || null;
 
-    if(loginInteraction){
-        return loginInteraction.edit({
-            content: bt.__({
-              phrase: "Write the command again to continue",
-              locale: interaction.locale,
-            }),
-        });
-    }
-
-    let message: WebhookMessageEditOptions = {
-        embeds: [
-            new EmbedBuilder()
-            .setTitle(
-                bt.__({ phrase: "StableHorde Configuration", locale: interaction.locale }),
-              )
-            .setDescription(
-                bt.__({ phrase: "Configure StableHorde", locale: interaction.locale }),
-              )
-            .setColor(Colors.Orange)
-            .setTimestamp()
-            .addFields({
-                    name: bt.__({ phrase: "Model", locale: interaction.locale }),
-                    value: userDatabase.horde_config?.model || "Not set",
-                    inline: true
-            }).addFields({
-                name: bt.__({ phrase: "Prompt", locale: interaction.locale }),
-                value: userDatabase.horde_config?.definedPrompt || "Not set",
-                inline: true
-            })
-        ],
-        components: [
-            new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([
-                new StringSelectMenuBuilder()
-                    .setCustomId("config_options")
-                    .setMinValues(1)
-                    .setMaxValues(1)
-                    .setPlaceholder(bt.__({ phrase: "Select an option", locale: interaction.locale }))
-                    .addOptions([
-                        {
-                            label: bt.__({ phrase: "Model", locale: interaction.locale }),
-                            description: bt.__({ phrase: "Change the model", locale: interaction.locale }),
-                            value: "model",
-                        },
-                        {
-                            label: bt.__({ phrase: "Prompt", locale: interaction.locale }),
-                            description: bt.__({ phrase: "Change the prompt", locale: interaction.locale }),
-                            value: "prompt",
-                        },
-                    ])
-            ])
-        ]
-    }
-
-    let deferred = await interaction.deferReply();
-    if(interaction.isCommand()){
-        deferred.edit(message);
-
-        deferred.createMessageComponentCollector({
-            filter: (componentInteraction) => {
-                return (
-                    componentInteraction.user.id === interaction.user.id && componentInteraction.isStringSelectMenu()
-                );
+            let message = await interaction.deferReply({
+                ephemeral: true,
+            });
+            // let's create a User if it doesn't exist
+            // we will create a new Horde config for the user
+            let config = await command.client.database.aIHordeConfig.upsert({
+                create: {
+                    userId: interaction.user.id,
+                    model,
+                    nsfw,
+                    sampler,
+                    preprompt_loras,
+                    cfg_scale,
+                    definedPrompt,
+                    gen_numbers,
+                    steps,
+                    clip_skip,
+                    height,
+                    width,
+                    upscaller,
+                    sharedKey,
                 },
-                time: 1000 * 60 * 10,
-                dispose: true,
-        }).on("collect", async (componentInteraction) => {
-            if(componentInteraction.isStringSelectMenu()){
-                let option = componentInteraction.values[0];
-                switch(option){
-                    case "model":
-                        await componentInteraction.deferUpdate();
-                        await componentInteraction.editReply({
-                            content: bt.__({
-                                phrase: "Write the command again to continue",
-                                locale: interaction.locale,
-                              }),
-                        });
-                        break;
-                    case "prompt":
-                        await componentInteraction.deferUpdate();
-                        await componentInteraction.editReply({
-                            content: bt.__({
-                                phrase: "Write the command again to continue",
-                                locale: interaction.locale,
-                              }),
-                        });
-                        break;
-                }
-                // update User database this need to be reviewed, some Options will be Autocompleted to avoid errors and to make it easier for the user
-                command.client.database.users.update({
+                update: {
+                    model,
+                    nsfw,
+                    sampler,
+                    preprompt_loras,
+                    cfg_scale,
+                    definedPrompt,
+                    gen_numbers,
+                    steps,
+                    clip_skip,
+                    height,
+                    width,
+                    upscaller,
+                    sharedKey,
+                },
+                where: {
+                    userId: interaction.user.id,
+                },
+            });
+
+            // now we add loras if they are one at least
+            let lorasArray = [loras, loras2, loras3, loras4, loras5];
+            let lorasArrayFiltered = lorasArray.filter((loras) => loras !== null);
+            if (lorasArrayFiltered.length > 0) {
+                // now we delete the loras that are not in the array
+                await command.client.database.loras.deleteMany({
                     where: {
-                        id: interaction.user.id,
+                        aiHordeConfigId: config.id,
                     },
-                    data: {
-                        horde_config: {
-                            update: {
-                                model: "test",
-                            }
-                        }
-                    }
-                })
+                });
+
+                // now we create or update the loras that are in the array
+                for (let loras of lorasArrayFiltered) {
+                    await command.client.database.loras.upsert({
+                        create: {
+                            loras_id: loras,
+                            aiHordeConfigId: config.id,
+                        },
+                        update: {
+                            loras_id: loras,
+                            aiHordeConfigId: config.id,
+                        },
+                        where: {
+                            loras_id: loras,
+                            aiHordeConfigId: config.id,
+                        },
+                    });
+                }
+
             }
-        });
+            message.edit({
+                content: bt.__({
+                    phrase: "Config updated !",
+                    locale: interaction.locale,
+                }),
+            });
+        }
     }
-  }
-  
+}
