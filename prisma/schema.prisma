@@ -20,8 +20,8 @@ model Users {
 
 model AIHordeConfig {
   id                 String  @id @unique
-  userId             String  @unique
   nsfw               Boolean @default(false)
+  sharedKey          String? 
   definedPrompt      String  @default("{p}###{ng}")
   loras              Loras[]
   cfg_scale          Int     @default(7)
@@ -34,7 +34,7 @@ model AIHordeConfig {
   clip_skip          Int     @default(2)
   upscaller          String  @default("RealESRGAN_x4plus")
   preprompt_loras    Boolean @default(false)
-  postProcessor      String  @default("")
+  postProcessor      String?
   Users              Users[]
 }
 
