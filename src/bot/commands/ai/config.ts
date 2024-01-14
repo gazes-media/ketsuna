@@ -1,21 +1,12 @@
 import {
-    ActionRowBuilder,
     Colors,
     CommandInteraction,
     CommandInteractionOptionResolver,
     EmbedBuilder,
-    InteractionResponse,
-    MessageFlags,
-    MessagePayload,
-    ModalBuilder,
-    StringSelectMenuBuilder,
-    TextInputBuilder,
-    TextInputStyle,
-    WebhookMessageEditOptions,
+    codeBlock,
 } from "discord.js";
 import CommandsBase from "../baseCommands";
 import { bt } from "../../../main";
-import Login from "./login";
 import { ModelGenerationInputPostProcessingTypes, ModelGenerationInputStableSamplers } from "@zeldafan0225/ai_horde";
 
 export default async function Config(
@@ -26,7 +17,7 @@ export default async function Config(
         let options = interaction.options;
         if (options instanceof CommandInteractionOptionResolver) {
             // get every options from the command
-            let model = options.getString("model");
+            let model = options.getString("model") || "Anything Diffusion";
             let nsfw = options.getBoolean("nsfw") || false;
             let loras = options.getString("loras") || null;
             let loras2 = options.getString("loras_2") || null;
@@ -52,7 +43,6 @@ export default async function Config(
             // we will create a new Horde config for the user
             let config = await command.client.database.aIHordeConfig.upsert({
                 create: {
-                    userId: interaction.user.id,
                     model,
                     nsfw,
                     sampler,
@@ -66,6 +56,16 @@ export default async function Config(
                     width,
                     upscaller,
                     sharedKey,
+                    user:{
+                        connectOrCreate:{
+                            where:{
+                                id:interaction.user.id
+                            },
+                            create:{
+                                id:interaction.user.id
+                            }
+                        }
+                    }
                 },
                 update: {
                     model,
@@ -81,12 +81,21 @@ export default async function Config(
                     width,
                     upscaller,
                     sharedKey,
+                    user:{
+                        connectOrCreate:{
+                            where:{
+                                id:interaction.user.id
+                            },
+                            create:{
+                                id:interaction.user.id
+                            }
+                        }
+                    }
                 },
                 where: {
                     userId: interaction.user.id,
                 },
             });
-
             // now we add loras if they are one at least
             let lorasArray = [loras, loras2, loras3, loras4, loras5];
             let lorasArrayFiltered = lorasArray.filter((loras) => loras !== null);
@@ -117,11 +126,30 @@ export default async function Config(
                 }
 
             }
+
+            // let's get loras from the database
+            config = await command.client.database.aIHordeConfig.findUnique({
+                where: {
+                    userId: interaction.user.id,
+                },
+                include: {
+                    loras: true,
+                },
+            });
             message.edit({
                 content: bt.__({
                     phrase: "Config updated !",
                     locale: interaction.locale,
                 }),
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle(bt.__({
+                            phrase: "Config updated !",
+                            locale: interaction.locale,
+                        }))
+                        .setColor(Colors.Green)
+                        .setDescription(codeBlock("json", JSON.stringify(config, null, 2)))
+                ],
             });
         }
     }
