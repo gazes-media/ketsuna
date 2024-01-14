@@ -88,7 +88,7 @@ export default async function Login(
     });
     return;
   }
-  if (userDatabase) {
+  if (userDatabase) { 
     command.client.database.users
       .update({
         where: {
@@ -136,4 +136,5 @@ export default async function Login(
         });
       });
   }
+  return modalInteraction;
 }

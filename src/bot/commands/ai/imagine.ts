@@ -28,6 +28,13 @@ export default async function Imagine(
     where: {
       id: interaction.user.id,
     },
+    include: {
+      horde_config: {
+        include: {
+          loras: true,
+        }
+      },
+    },
   });
 
   let defaultToken = "0000000000";
@@ -67,19 +74,23 @@ export default async function Imagine(
     // the model the more demanded is the one with the most count of Workers
     let model =
       options.getString("model") ||
+      (userDatabase && userDatabase.horde_config.model) ||
       modelMoreDemanded.sort((a, b) => {
         return b.count - a.count;
       })[0].name;
     let negative_prompt =
       options.getString("negative_prompt") ||
-      "deformed, blurry,[bad anatomy], disfigured, poorly drawn face, [[[mutation]]], mutated, [[[extra arms]]], extra legs, ugly, horror, out of focus, depth of field, focal blur, bad quality, double body, [[double torso]], equine, bovine,[[feral]], [duo], [[canine]], creepy fingers, extra fingers, bad breasts, bad butt, split breasts, split butt, Blurry textures, blurry everything, creepy arms, bad arm anatomy, bad leg anatomy, bad finger anatomy, poor connection of the body with clothing and other things, poor quality character, poor quality body, Bad clothes quality, bad underwear, bad ears, poor eyes quality, poor quality of the background, poor facial quality, text.";
-    let nsfw = options.getBoolean("nsfw") || false;
-    let loras = options.getString("loras") || null;
-    let loras2 = options.getString("loras_2") || null;
-    let loras3 = options.getString("loras_3") || null;
-    let loras4 = options.getString("loras_4") || null;
-    let loras5 = options.getString("loras_5") || null;
-    let preprompt = options.getBoolean("preprompt") || false;
+      "";
+
+    // first let's check if userDatabase is null, if it is, we set the default value to false
+    let config = (userDatabase ? userDatabase.horde_config : null);
+    let nsfw = options.getBoolean("nsfw") || (config.nsfw) || false;
+    let loras = options.getString("loras") || (config.loras.length > 0 ? config.loras[0].loras_id : null) || null;
+    let loras2 = options.getString("loras_2") || (config.loras.length > 1 ? config.loras[1].loras_id : null) || null;
+    let loras3 = options.getString("loras_3") || (config.loras.length > 2 ? config.loras[2].loras_id : null) || null;
+    let loras4 = options.getString("loras_4") || (config.loras.length > 3 ? config.loras[3].loras_id : null) || null;
+    let loras5 = options.getString("loras_5") || (config.loras.length > 4 ? config.loras[4].loras_id : null) || null;
+    let preprompt = options.getBoolean("preprompt") || (config.preprompt_loras) || false;
     if (image) {
       let textChannel =
         interaction.channel instanceof TextChannel ? interaction.channel : null;
@@ -90,26 +101,29 @@ export default async function Imagine(
       command.client.timeouts
         .get(interaction.commandName)
         ?.set(interaction.user.id, true);
+
+      let predefinedPrompt = (config?.definedPrompt) || "{p}###{ng}deformed, blurry,[bad anatomy], disfigured, poorly drawn face, [[[mutation]]], mutated, [[[extra arms]]], extra legs, ugly, horror, out of focus, depth of field, focal blur, bad quality, double body, [[double torso]], equine, bovine,[[feral]], [duo], [[canine]], creepy fingers, extra fingers, bad breasts, bad butt, split breasts, split butt, Blurry textures, blurry everything, creepy arms, bad arm anatomy, bad leg anatomy, bad finger anatomy, poor connection of the body with clothing and other things, poor quality character, poor quality body, Bad clothes quality, bad underwear, bad ears, poor eyes quality, poor quality of the background, poor facial quality, text.";
       let prompt: ImageGenerationInput = {
-        prompt: image + "### " + negative_prompt,
+        prompt: predefinedPrompt.replace("{p}", image).replace("{ng}", negative_prompt),
         params: {
           sampler_name: ModelGenerationInputStableSamplers.k_euler,
-          cfg_scale: 7,
-          height: 512,
-          width: 512,
+          cfg_scale: (userDatabase && userDatabase.horde_config.cfg_scale) || 7,
+          height: (userDatabase && userDatabase.horde_config.height) || 512,
+          width: (userDatabase && userDatabase.horde_config.width) || 512,
           post_processing: [
-            ModelGenerationInputPostProcessingTypes.RealESRGAN_x4plus,
+            (userDatabase && userDatabase.horde_config.upscaller) as ImageGenerationInput["params"]["post_processing"][0] || ModelGenerationInputPostProcessingTypes.RealESRGAN_x4plus,
           ],
-          clip_skip: 2,
+          clip_skip: (userDatabase && userDatabase.horde_config.clip_skip) || 3,
           facefixer_strength: 1,
-          steps: 25,
-          n: 4,
+          steps: (userDatabase && userDatabase.horde_config.steps) || 25,
+          n: (userDatabase && userDatabase.horde_config.gen_numbers) || 4,
         },
         censor_nsfw: nsfwchannel ? (nsfw ? false : true) : true,
         models: [model],
         nsfw: nsfwchannel ? (nsfw ? true : false) : false,
         shared: true,
       };
+
       let lorasList = [loras, loras2, loras3, loras4, loras5].filter((loras) => {
         return loras !== null;
       });
@@ -119,8 +133,8 @@ export default async function Imagine(
           try {
             let lorasDatas = await command.client.getLorasModel(lorasList[0]);
             let randomModelVersion =
-            lorasDatas.modelVersions[
-                Math.floor(Math.random() * lorasDatas.modelVersions.length)
+              lorasDatas.modelVersions[
+              Math.floor(Math.random() * lorasDatas.modelVersions.length)
               ];
             let randomMetaImage =
               randomModelVersion.images[
@@ -142,14 +156,14 @@ export default async function Imagine(
           return {
             name: loras,
             model: index,
-            clip: index+1,
+            clip: index + 1,
             inject_trigger: "any",
           };
         });
       }
       if (model.toLowerCase().includes("sdxl")) {
         prompt.params.hires_fix = false;
-      }else{
+      } else {
         prompt.params.hires_fix = true;
       }
       ai.postAsyncImageGenerate(prompt, {
@@ -184,9 +198,9 @@ export default async function Imagine(
                         generations: status.generations.map((generation) => {
                           return {
                             url: generation.img,
-                            workerName:generation.worker_name,
-                            workerId:generation.worker_id,
-                            model:generation.model,
+                            workerName: generation.worker_name,
+                            workerId: generation.worker_id,
+                            model: generation.model,
                           }
                         }),
                         prompt: JSON.stringify(prompt),
