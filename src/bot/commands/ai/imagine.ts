@@ -94,7 +94,7 @@ export default async function Imagine(
         prompt: image + "### " + negative_prompt,
         params: {
           sampler_name: ModelGenerationInputStableSamplers.k_euler,
-          cfg_scale: 30,
+          cfg_scale: 7,
           height: 512,
           width: 512,
           post_processing: [
@@ -102,7 +102,7 @@ export default async function Imagine(
           ],
           clip_skip: 2,
           facefixer_strength: 1,
-          steps: 20,
+          steps: 25,
           n: 4,
         },
         censor_nsfw: nsfwchannel ? (nsfw ? false : true) : true,
