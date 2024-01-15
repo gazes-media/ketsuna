@@ -20,25 +20,14 @@ import {
   ModelGenerationInputStableSamplers,
 } from "@zeldafan0225/ai_horde";
 import { bt } from "../../../main";
+import { getUser } from "../../functions/database";
 export default async function Imagine(
   command: CommandsBase,
   interaction: CommandInteraction,
 ) {
-  let userDatabase = await command.client.database.users.findFirst({
-    where: {
-      id: interaction.user.id,
-    },
-    include: {
-      horde_config: {
-        include: {
-          loras: true,
-        }
-      },
-    },
-  });
-
+  let userDatabase = await getUser(interaction.user.id, command.client.database);
   let defaultToken = "0000000000";
-  if (userDatabase) {
+  if (userDatabase && userDatabase.horde_token) {
     defaultToken = command.client.decryptString(userDatabase.horde_token);
   }
   let timeout = command.client.timeouts.get(interaction.commandName);
@@ -64,6 +53,7 @@ export default async function Imagine(
     return;
   }
   let ai = command.client.aiHorde;
+  let config = userDatabase.horde_config ? userDatabase.horde_config : null;
 
   // get the option value
   let message = await interaction.deferReply();
@@ -73,24 +63,22 @@ export default async function Imagine(
     let image = options.getString("prompt") || "";
     // the model the more demanded is the one with the most count of Workers
     let model =
-      options.getString("model") ||
-      (userDatabase && userDatabase.horde_config.model) ||
+      options.getString("model") || config?.model ||
       modelMoreDemanded.sort((a, b) => {
         return b.count - a.count;
       })[0].name;
     let negative_prompt =
       options.getString("negative_prompt") ||
       "";
-
+    let lorasConfig = config ? config.loras : null;
     // first let's check if userDatabase is null, if it is, we set the default value to false
-    let config = (userDatabase ? userDatabase.horde_config : null);
-    let nsfw = options.getBoolean("nsfw") || (config.nsfw) || false;
-    let loras = options.getString("loras") || (config.loras.length > 0 ? config.loras[0].loras_id : null) || null;
-    let loras2 = options.getString("loras_2") || (config.loras.length > 1 ? config.loras[1].loras_id : null) || null;
-    let loras3 = options.getString("loras_3") || (config.loras.length > 2 ? config.loras[2].loras_id : null) || null;
-    let loras4 = options.getString("loras_4") || (config.loras.length > 3 ? config.loras[3].loras_id : null) || null;
-    let loras5 = options.getString("loras_5") || (config.loras.length > 4 ? config.loras[4].loras_id : null) || null;
-    let preprompt = options.getBoolean("preprompt") || (config.preprompt_loras) || false;
+    let nsfw = options.getBoolean("nsfw") || config?.nsfw || false;
+    let loras = options.getString("loras") || lorasConfig?.length > 0 ? config.loras[0].loras_id : null || null;
+    let loras2 = options.getString("loras_2") || lorasConfig?.length > 1 ? config.loras[1].loras_id : null || null;
+    let loras3 = options.getString("loras_3") || lorasConfig?.length > 2 ? config.loras[2].loras_id : null || null;
+    let loras4 = options.getString("loras_4") || lorasConfig?.length > 3 ? config.loras[3].loras_id : null || null;
+    let loras5 = options.getString("loras_5") || lorasConfig?.length > 4 ? config.loras[4].loras_id : null || null;
+    let preprompt = options.getBoolean("preprompt") || config?.preprompt_loras || false;
     if (image) {
       let textChannel =
         interaction.channel instanceof TextChannel ? interaction.channel : null;
@@ -102,21 +90,21 @@ export default async function Imagine(
         .get(interaction.commandName)
         ?.set(interaction.user.id, true);
 
-      let predefinedPrompt = (config?.definedPrompt) || "{p}###{ng}deformed, blurry,[bad anatomy], disfigured, poorly drawn face, [[[mutation]]], mutated, [[[extra arms]]], extra legs, ugly, horror, out of focus, depth of field, focal blur, bad quality, double body, [[double torso]], equine, bovine,[[feral]], [duo], [[canine]], creepy fingers, extra fingers, bad breasts, bad butt, split breasts, split butt, Blurry textures, blurry everything, creepy arms, bad arm anatomy, bad leg anatomy, bad finger anatomy, poor connection of the body with clothing and other things, poor quality character, poor quality body, Bad clothes quality, bad underwear, bad ears, poor eyes quality, poor quality of the background, poor facial quality, text.";
+      let predefinedPrompt = config?.definedPrompt || "{p}###{ng}deformed, blurry,[bad anatomy], disfigured, poorly drawn face, [[[mutation]]], mutated, [[[extra arms]]], extra legs, ugly, horror, out of focus, depth of field, focal blur, bad quality, double body, [[double torso]], equine, bovine,[[feral]], [duo], [[canine]], creepy fingers, extra fingers, bad breasts, bad butt, split breasts, split butt, Blurry textures, blurry everything, creepy arms, bad arm anatomy, bad leg anatomy, bad finger anatomy, poor connection of the body with clothing and other things, poor quality character, poor quality body, Bad clothes quality, bad underwear, bad ears, poor eyes quality, poor quality of the background, poor facial quality, text.";
       let prompt: ImageGenerationInput = {
         prompt: predefinedPrompt.replace("{p}", image).replace("{ng}", negative_prompt),
         params: {
-          sampler_name: ModelGenerationInputStableSamplers.k_euler,
-          cfg_scale: (userDatabase && userDatabase.horde_config.cfg_scale) || 7,
-          height: (userDatabase && userDatabase.horde_config.height) || 512,
-          width: (userDatabase && userDatabase.horde_config.width) || 512,
+          sampler_name: config?.sampler as ImageGenerationInput["params"]["sampler_name"] || ModelGenerationInputStableSamplers.k_euler,
+          cfg_scale: config?.cfg_scale || 7,
+          height: config?.height || 512,
+          width: config?.width || 512,
           post_processing: [
-            (userDatabase && userDatabase.horde_config.upscaller) as ImageGenerationInput["params"]["post_processing"][0] || ModelGenerationInputPostProcessingTypes.RealESRGAN_x4plus,
+            config?.upscaller as ImageGenerationInput["params"]["post_processing"][0] || ModelGenerationInputPostProcessingTypes.RealESRGAN_x4plus,
           ],
-          clip_skip: (userDatabase && userDatabase.horde_config.clip_skip) || 3,
+          clip_skip: config?.clip_skip || 3,
           facefixer_strength: 1,
-          steps: (userDatabase && userDatabase.horde_config.steps) || 25,
-          n: (userDatabase && userDatabase.horde_config.gen_numbers) || 4,
+          steps: config?.steps || 25,
+          n: config?.gen_numbers || 4,
         },
         censor_nsfw: nsfwchannel ? (nsfw ? false : true) : true,
         models: [model],

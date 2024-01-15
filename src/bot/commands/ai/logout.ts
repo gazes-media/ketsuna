@@ -8,17 +8,14 @@ import {
 } from "discord.js";
 import CommandsBase from "../baseCommands";
 import { bt } from "../../../main";
+import { removeToken } from "../../functions/database";
 
 export default async function Logout(
   command: CommandsBase,
   interaction: CommandInteraction,
 ) {
   try {
-    let userDatabase = await command.client.database.users.delete({
-      where: {
-        id: interaction.user.id,
-      },
-    });
+    let userDatabase = removeToken(interaction.user.id, command.client.database);
     if (userDatabase) {
       interaction.reply({
         content: bt.__({

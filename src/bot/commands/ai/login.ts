@@ -8,6 +8,7 @@ import {
 } from "discord.js";
 import CommandsBase from "../baseCommands";
 import { bt } from "../../../main";
+import { createUser } from "../../functions/database";
 
 export default async function Login(
   command: CommandsBase,
@@ -19,7 +20,7 @@ export default async function Login(
     },
   });
   let currentToken = "";
-  if (userDatabase) {
+  if (userDatabase && userDatabase.horde_token) {
     currentToken = command.client.decryptString(userDatabase.horde_token);
   }
   interaction.showModal(
@@ -66,13 +67,7 @@ export default async function Login(
 
   let token = modal.fields.getTextInputValue("token");
   if (!token) {
-    return modal.reply({
-      content: bt.__({
-        phrase: "You must enter a token",
-        locale: interaction.locale,
-      }),
-      flags: MessageFlags.Ephemeral,
-    });
+    return;
   }
 
   if (modal.deferred) return;
@@ -88,53 +83,23 @@ export default async function Login(
     });
     return;
   }
-  if (userDatabase) { 
-    command.client.database.users
-      .update({
-        where: {
-          id: interaction.user.id,
-        },
-        data: {
-          horde_token: command.client.encryptString(token),
-        },
-      })
-      .then(() => {
-        modalInteraction.edit({
-          content: bt.__({
-            phrase: "Token updated",
-            locale: interaction.locale,
-          }),
-        });
-      })
-      .catch((err) => {
-        modalInteraction.edit({
-          content: bt.__({
-            phrase: "An error occurred",
-            locale: interaction.locale,
-          }),
-        });
-      });
-  } else {
-    command.client.database.users
-      .create({
-        data: {
-          id: interaction.user.id,
-          horde_token: command.client.encryptString(token),
-        },
-      })
-      .then(() => {
-        modalInteraction.edit({
-          content: bt.__({ phrase: "Token added", locale: interaction.locale }),
-        });
-      })
-      .catch((err) => {
-        modalInteraction.edit({
-          content: bt.__({
-            phrase: "An error occurred",
-            locale: interaction.locale,
-          }),
-        });
-      });
-  }
+  createUser({
+    id: interaction.user.id,
+    horde_token: command.client.encryptString(token),
+  }, command.client.database).then(() => {
+    modalInteraction.edit({
+      content: bt.__({
+        phrase: "You have been logged in",
+        locale: interaction.locale,
+      }),
+    });
+  }).catch((err) => {
+    modalInteraction.edit({
+      content: bt.__({
+        phrase: "An error occured",
+        locale: interaction.locale,
+      }),
+    });
+  });
   return modalInteraction;
 }

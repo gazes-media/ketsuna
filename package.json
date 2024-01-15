@@ -21,6 +21,7 @@
     "@types/react-dom": "^18.0.7",
     "cross-env": "^7.0.3",
     "nodemon": "^3.0.2",
+    "prisma": "^5.8.1",
     "ts-node": "^10.9.2",
     "typescript": ">=2.7"
   },
@@ -34,14 +35,13 @@
     "@mui/material": "^5.15.2",
     "@mui/material-nextjs": "^5.15.0",
     "@prisma/adapter-libsql": "^5.7.1",
-    "@prisma/client": "5.7.1",
+    "@prisma/client": "5.8.1",
     "@zeldafan0225/ai_horde": "^5.0.10",
     "discord.js": "14.15.0-dev.1703981435-136c66c21",
     "dotenv": "^16.3.1",
     "fastify": "^4.25.1",
     "i18n": "^0.15.1",
     "next": "^14.0.4",
-    "prisma": "^5.7.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   }

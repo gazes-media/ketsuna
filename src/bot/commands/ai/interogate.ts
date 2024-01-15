@@ -1,23 +1,17 @@
 import {
-  ActionRowBuilder,
-  Attachment,
-  ButtonBuilder,
+  ActionRowBuilder, ButtonBuilder,
   ButtonStyle,
   CommandInteraction,
   CommandInteractionOptionResolver,
-  EmbedBuilder,
-  MessageFlags,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
+  EmbedBuilder
 } from "discord.js";
 import CommandsBase from "../baseCommands";
 import {
-  GenerationInputKobold,
   HordeAsyncRequestStates,
-  ModelInterrogationFormTypes,
+  ModelInterrogationFormTypes
 } from "@zeldafan0225/ai_horde";
 import { bt } from "../../../main";
+import { getUser } from "../../functions/database";
 
 export default async function Interogate(
   command: CommandsBase,
@@ -29,14 +23,9 @@ export default async function Interogate(
   let userToken = "0000000000";
   try {
     userToken = await new Promise<string>((resolve, reject) => {
-      command.client.database.users
-        .findFirst({
-          where: {
-            id: interaction.user.id,
-          },
-        })
+      getUser(interaction.user.id, command.client.database)
         .then((user) => {
-          if (!user) return reject("Vous n'êtes pas enregistré");
+          if (!user.horde_token) reject("No token found");
           resolve(command.client.decryptString(user.horde_token));
         })
         .catch(reject);
@@ -44,7 +33,7 @@ export default async function Interogate(
   } catch (err) {
     i.edit({
       content: bt.__({
-        phrase: "User not registered, starting with default token",
+        phrase: "You must login to StableHorde",
         locale: interaction.locale,
       }),
     });

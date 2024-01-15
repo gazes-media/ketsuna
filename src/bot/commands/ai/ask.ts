@@ -13,6 +13,7 @@ import {
 import CommandsBase from "../baseCommands";
 import { GenerationInputKobold } from "@zeldafan0225/ai_horde";
 import { bt } from "../../../main";
+import { getUser } from "../../functions/database";
 
 export default async function Ask(
   command: CommandsBase,
@@ -24,14 +25,9 @@ export default async function Ask(
   let userToken = "0000000000";
   try {
     userToken = await new Promise<string>((resolve, reject) => {
-      command.client.database.users
-        .findFirst({
-          where: {
-            id: interaction.user.id,
-          },
-        })
+      getUser(interaction.user.id, command.client.database)
         .then((user) => {
-          if (!user) return reject("Vous n'êtes pas enregistré");
+          if (!user.horde_token) reject("No token found");
           resolve(command.client.decryptString(user.horde_token));
         })
         .catch(reject);

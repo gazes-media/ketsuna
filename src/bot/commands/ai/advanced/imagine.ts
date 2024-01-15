@@ -20,18 +20,15 @@ import {
   ModelGenerationInputStableSamplers,
 } from "@zeldafan0225/ai_horde";
 import { bt } from "../../../../main";
+import { getUser } from "../../../functions/database";
 export default async function AdvancedImagine(
   command: CommandsBase,
   interaction: CommandInteraction,
 ) {
-  let userDatabase = await command.client.database.users.findFirst({
-    where: {
-      id: interaction.user.id,
-    },
-  });
+  let userDatabase = await getUser(interaction.user.id, command.client.database);
 
   let defaultToken = "0000000000";
-  if (userDatabase) {
+  if (userDatabase && userDatabase.horde_token) {
     defaultToken = command.client.decryptString(userDatabase.horde_token);
   }
   let timeout = command.client.timeouts.get(interaction.commandName);

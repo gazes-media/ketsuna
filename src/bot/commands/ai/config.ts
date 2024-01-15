@@ -8,6 +8,8 @@ import {
 import CommandsBase from "../baseCommands";
 import { bt } from "../../../main";
 import { ModelGenerationInputPostProcessingTypes, ModelGenerationInputStableSamplers } from "@zeldafan0225/ai_horde";
+import { addLoras, createUser, getUser, removeLoras } from "../../functions/database";
+import { create } from "domain";
 
 export default async function Config(
     command: CommandsBase,
@@ -41,106 +43,48 @@ export default async function Config(
             });
             // let's create a User if it doesn't exist
             // we will create a new Horde config for the user
-            let config = await command.client.database.aIHordeConfig.upsert({
-                create: {
-                    model,
-                    nsfw,
-                    sampler,
-                    preprompt_loras,
-                    cfg_scale,
-                    definedPrompt,
-                    gen_numbers,
-                    steps,
-                    clip_skip,
-                    height,
-                    width,
-                    upscaller,
-                    sharedKey,
-                    user:{
-                        connectOrCreate:{
-                            where:{
-                                id:interaction.user.id
-                            },
-                            create:{
-                                id:interaction.user.id
-                            }
-                        }
-                    }
+            let user = await createUser({
+                id: interaction.user.id,
+                horde_config: {
+                    connectOrCreate: {
+                        where: {
+                            userId: interaction.user.id,
+                        },
+                        create: {
+                            model,
+                            nsfw,
+                            sampler,
+                            preprompt_loras,
+                            cfg_scale,
+                            definedPrompt,
+                            gen_numbers,
+                            steps,
+                            clip_skip,
+                            height,
+                            width,
+                            upscaller,
+                            sharedKey,
+                        },
+                    },
                 },
-                update: {
-                    model,
-                    nsfw,
-                    sampler,
-                    preprompt_loras,
-                    cfg_scale,
-                    definedPrompt,
-                    gen_numbers,
-                    steps,
-                    clip_skip,
-                    height,
-                    width,
-                    upscaller,
-                    sharedKey,
-                    user:{
-                        connectOrCreate:{
-                            where:{
-                                id:interaction.user.id
-                            },
-                            create:{
-                                id:interaction.user.id
-                            }
-                        }
-                    }
-                },
-                where: {
-                    userId: interaction.user.id,
-                },
-            });
+            }, command.client.database);
             // now we add loras if they are one at least
             let lorasArray = [loras, loras2, loras3, loras4, loras5];
             let lorasArrayFiltered = lorasArray.filter((loras) => loras !== null);
             if (lorasArrayFiltered.length > 0) {
                 // now we delete the loras that are not in the array
-                await command.client.database.loras.deleteMany({
-                    where: {
-                        aiHordeConfigId: config.id,
-                    },
-                });
+                await removeLoras(user.horde_config.id, command.client.database);
 
                 // now we create or update the loras that are in the array
                 for (let loras of lorasArrayFiltered) {
-                    await command.client.database.loras.upsert({
-                        create: {
-                            loras_id: loras,
-                            aiHordeConfigId: config.id,
-                        },
-                        update: {
-                            loras_id: loras,
-                            aiHordeConfigId: config.id,
-                        },
-                        where: {
-                            loras_id: loras,
-                            aiHordeConfigId: config.id,
-                        },
-                    });
+                    await addLoras(user.horde_config.id, loras, command.client.database);
                 }
 
             }
 
             // let's get loras from the database
-            config = await command.client.database.aIHordeConfig.findUnique({
-                where: {
-                    userId: interaction.user.id,
-                },
-                include: {
-                    loras: true,
-                },
-            });
+            const config = await getUser(interaction.user.id, command.client.database);
             message.edit({
-                content: bt.__({
-                    phrase: "Config updated !",
-                    locale: interaction.locale,
-                }),
                 embeds: [
                     new EmbedBuilder()
                         .setTitle(bt.__({
@@ -148,7 +92,7 @@ export default async function Config(
                             locale: interaction.locale,
                         }))
                         .setColor(Colors.Green)
-                        .setDescription(codeBlock("json", JSON.stringify(config, null, 2)))
+                        .setDescription(codeBlock("json", JSON.stringify(config.horde_config, null, 2)))
                 ],
             });
         }

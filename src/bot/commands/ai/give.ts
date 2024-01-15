@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 import CommandsBase from "../baseCommands";
 import { bt } from "../../../main";
+import { getUser } from "../../functions/database";
 
 export default async function Give(
   command: CommandsBase,
@@ -24,17 +25,20 @@ export default async function Give(
       locale: interaction.locale,
     }),
   });
+
+  if(userSelected.id === interaction.user.id) return i.edit({
+    content: bt.__({
+      phrase: "You can't give kudos to yourself",
+      locale: interaction.locale,
+    }),
+  });
   i.edit({
     content: bt.__({
       phrase: "Searching for the user in the database",
       locale: interaction.locale,
     }),
   });
-  let giverUser = await command.client.database.users.findFirst({
-    where: {
-      id: interaction.user.id,
-    },
-  });
+  let giverUser = await getUser(interaction.user.id, command.client.database);
   if (!giverUser)
     return i.edit({
       content: bt.__(
@@ -48,6 +52,12 @@ export default async function Give(
   i.edit({
     content: bt.__({
       phrase: "Searching for the user in the API",
+      locale: interaction.locale,
+    }),
+  });
+  if(!giverUser.horde_token) return i.edit({
+    content: bt.__({
+      phrase: "You must login to StableHorde using %s",
       locale: interaction.locale,
     }),
   });
@@ -65,12 +75,8 @@ export default async function Give(
         }),
       });
     // find the other user
-    let receiverUser = await command.client.database.users.findFirst({
-      where: {
-        id: userSelected.id,
-      },
-    });
-    if (!receiverUser)
+    let receiverUser = await getUser(userSelected.id, command.client.database);
+    if (!receiverUser.horde_token)
       return i.edit({
         content: bt.__({
           phrase: "The user is not registered",

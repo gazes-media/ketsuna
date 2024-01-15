@@ -1,15 +1,11 @@
 import {
-  ActionRowBuilder,
   CommandInteraction,
   CommandInteractionOptionResolver,
   EmbedBuilder,
-  MessageFlags,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
 } from "discord.js";
 import CommandsBase from "../baseCommands";
 import { bt } from "../../../main";
+import { getUser } from "../../functions/database";
 
 export default async function Info(
   command: CommandsBase,
@@ -33,12 +29,8 @@ export default async function Info(
       locale: interaction.locale,
     }),
   });
-  let userDatabase = await command.client.database.users.findFirst({
-    where: {
-      id: InteractionUser.id,
-    },
-  });
-  if (!userDatabase)
+  let userDatabase = await getUser(InteractionUser.id, command.client.database);
+  if (!userDatabase.horde_token)
     return i.edit({
       content: bt.__(
         {
