@@ -21,10 +21,11 @@
     "@types/react": "^18.0.23",
     "@types/react-dom": "^18.0.7",
     "cross-env": "^7.0.3",
+    "eslint": "^8.56.0",
     "nodemon": "^3.0.2",
     "prisma": "^5.8.1",
     "ts-node": "^10.9.2",
-    "typescript": ">=2.7"
+    "typescript": "^5.3.3"
   },
   "dependencies": {
     "@emotion/cache": "^11.11.0",
