@@ -7,7 +7,8 @@
     "dev": "nodemon",
     "build": "next build && swc src --out-dir dist",
     "migrate": "prisma generate && prisma db push",
-    "start": "cross-env NODE_ENV=production node dist/main.js"
+    "start": "cross-env NODE_ENV=production node dist/main.js",
+    "test": "swc src --out-dir dist && node --test"
   },
   "author": "garder500",
   "license": "ISC",
