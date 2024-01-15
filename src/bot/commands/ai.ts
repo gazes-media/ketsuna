@@ -445,6 +445,15 @@ const commandData = new SlashCommandBuilder()
           .setMinValue(64)
           .setMaxValue(3072),
       )
+      .addBooleanOption((option) =>
+        option
+          .setName("remove_loras")
+          .setDescription("Remove all loras from the config")
+          .setRequired(false)
+          .setDescriptionLocalizations({
+            fr: "Supprimer tous les loras de la config",
+          }),
+      )
       .addStringOption((option) =>
         option
           .setName("sampler")

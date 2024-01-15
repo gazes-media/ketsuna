@@ -8,8 +8,9 @@ import {
 import CommandsBase from "../baseCommands";
 import { bt } from "../../../main";
 import { ModelGenerationInputPostProcessingTypes, ModelGenerationInputStableSamplers } from "@zeldafan0225/ai_horde";
-import { addLoras, createUser, getUser, removeLoras } from "../../functions/database";
+import { addLoras, createOrUpdateUserWithConfig, createUser, getUser, removeLoras } from "../../functions/database";
 import { create } from "domain";
+import { Prisma } from "@prisma/client";
 
 export default async function Config(
     command: CommandsBase,
@@ -19,71 +20,81 @@ export default async function Config(
         let options = interaction.options;
         if (options instanceof CommandInteractionOptionResolver) {
             // get every options from the command
-            let model = options.getString("model") || "Anything Diffusion";
-            let nsfw = options.getBoolean("nsfw") || false;
-            let loras = options.getString("loras") || null;
-            let loras2 = options.getString("loras_2") || null;
-            let loras3 = options.getString("loras_3") || null;
-            let loras4 = options.getString("loras_4") || null;
-            let loras5 = options.getString("loras_5") || null;
-            let definedPrompt = options.getString("preprompt") || "{p}###{ng}deformed, blurry,[bad anatomy], disfigured, poorly drawn face, [[[mutation]]], mutated, [[[extra arms]]], extra legs, ugly, horror, out of focus, depth of field, focal blur, bad quality, double body, [[double torso]], equine, bovine,[[feral]], [duo], [[canine]], creepy fingers, extra fingers, bad breasts, bad butt, split breasts, split butt, Blurry textures, blurry everything, creepy arms, bad arm anatomy, bad leg anatomy, bad finger anatomy, poor connection of the body with clothing and other things, poor quality character, poor quality body, Bad clothes quality, bad underwear, bad ears, poor eyes quality, poor quality of the background, poor facial quality, text.";
-            let preprompt_loras = options.getBoolean("loras_preprompt") || false;
-            let cfg_scale = options.getNumber("cfg_scale") || 7;
-            let sampler = options.getString("sampler") || ModelGenerationInputStableSamplers.k_euler;
-            let gen_numbers = options.getNumber("numbers") || 4;
-            let steps = options.getNumber("step") || 25;
-            let clip_skip = options.getNumber("clip_skip") || 3;
-            let height = options.getNumber("height") || 512;
-            let width = options.getNumber("width") || 512;
-            let upscaller = options.getString("upscaler") || ModelGenerationInputPostProcessingTypes.RealESRGAN_x4plus;
-            let sharedKey = options.getString("shared_key") || null;
+            let model = options.getString("model")
+            let nsfw = options.getBoolean("nsfw")
+            let loras = options.getString("loras")
+            let loras2 = options.getString("loras_2")
+            let loras3 = options.getString("loras_3")
+            let loras4 = options.getString("loras_4")
+            let loras5 = options.getString("loras_5")
+            let definedPrompt = options.getString("preprompt")
+            let preprompt_loras = options.getBoolean("loras_preprompt")
+            let cfg_scale = options.getNumber("cfg_scale")
+            let sampler = options.getString("sampler")
+            let gen_numbers = options.getNumber("numbers")
+            let steps = options.getNumber("step")
+            let clip_skip = options.getNumber("clip_skip")
+            let height = options.getNumber("height")
+            let width = options.getNumber("width")
+            let upscaller = options.getString("upscaler")
+            let sharedKey = options.getString("shared_key")
+            let remove_loras = options.getBoolean("remove_loras") || false;
 
             let message = await interaction.deferReply({
                 ephemeral: true,
             });
+
+            let user = await getUser(interaction.user.id, command.client.database);
             // let's create a User if it doesn't exist
             // we will create a new Horde config for the user
-            let user = await createUser({
-                id: interaction.user.id,
-                horde_config: {
-                    connectOrCreate: {
-                        where: {
-                            userId: interaction.user.id,
-                        },
-                        create: {
-                            model,
-                            nsfw,
-                            sampler,
-                            preprompt_loras,
-                            cfg_scale,
-                            definedPrompt,
-                            gen_numbers,
-                            steps,
-                            clip_skip,
-                            height,
-                            width,
-                            upscaller,
-                            sharedKey,
-                        },
-                    },
-                },
-            }, command.client.database);
+            if(user.horde_config === null && definedPrompt === null) {
+                definedPrompt = "{p}###{ng}deformed, blurry,[bad anatomy], disfigured, poorly drawn face, [[[mutation]]], mutated, [[[extra arms]]], extra legs, ugly, horror, out of focus, depth of field, focal blur, bad quality, double body, [[double torso]], equine, bovine,[[feral]], [duo], [[canine]], creepy fingers, extra fingers, bad breasts, bad butt, split breasts, split butt, Blurry textures, blurry everything, creepy arms, bad arm anatomy, bad leg anatomy, bad finger anatomy, poor connection of the body with clothing and other things, poor quality character, poor quality body, Bad clothes quality, bad underwear, bad ears, poor eyes quality, poor quality of the background, poor facial quality, text."
+            }
+            
+            // we will now create an Object with non null values
+            let configObject: Prisma.AIHordeConfigCreateInput = {
+                model,
+                nsfw,
+                sampler,
+                preprompt_loras,
+                cfg_scale,
+                definedPrompt,
+                gen_numbers,
+                steps,
+                clip_skip,
+                height,
+                width,
+                upscaller,
+                sharedKey,
+            }
+
+            // now we will filter the datas
+            let filteredDatas = Object.keys(configObject).filter((data) => configObject[data as keyof string] !== null);
+            let filteredConfigObject: Prisma.AIHordeConfigCreateInput = {};
+            for (let data of filteredDatas) {
+                filteredConfigObject[data as keyof string] = configObject[data as keyof string];
+            }
+
+            let config = await createOrUpdateUserWithConfig(interaction.user.id, filteredConfigObject, command.client.database);
             // now we add loras if they are one at least
             let lorasArray = [loras, loras2, loras3, loras4, loras5];
             let lorasArrayFiltered = lorasArray.filter((loras) => loras !== null);
             if (lorasArrayFiltered.length > 0) {
                 // now we delete the loras that are not in the array
-                await removeLoras(user.horde_config.id, command.client.database);
+                await removeLoras(config.id, command.client.database);
 
                 // now we create or update the loras that are in the array
                 for (let loras of lorasArrayFiltered) {
-                    await addLoras(user.horde_config.id, loras, command.client.database);
+                    await addLoras(config.id, loras, command.client.database);
                 }
 
+            }else if (remove_loras) {
+                // now we delete every loras
+                await removeLoras(config.id, command.client.database);
             }
 
             // let's get loras from the database
-            const config = await getUser(interaction.user.id, command.client.database);
+            user = await getUser(interaction.user.id, command.client.database);
             message.edit({
                 embeds: [
                     new EmbedBuilder()
@@ -92,7 +103,7 @@ export default async function Config(
                             locale: interaction.locale,
                         }))
                         .setColor(Colors.Green)
-                        .setDescription(codeBlock("json", JSON.stringify(config.horde_config, null, 2)))
+                        .setDescription(codeBlock("json", JSON.stringify(user.horde_config, null, 2)))
                 ],
             });
         }

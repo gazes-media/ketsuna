@@ -1,4 +1,5 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { AIHordeConfig, Prisma, PrismaClient } from "@prisma/client";
+import { DefaultArgs } from "@prisma/client/runtime/library";
 
 export async function createUser(user: Prisma.UsersCreateInput, database: PrismaClient) {
   return await database.users.upsert({
@@ -15,6 +16,37 @@ export async function createUser(user: Prisma.UsersCreateInput, database: Prisma
     update: user,
     create: user,
   });
+}
+
+export async function createOrUpdateUserWithConfig(userId: string, config: Prisma.AIHordeConfigCreateInput, database: PrismaClient) {
+    let user = await getUser(userId, database);
+    // let's add the config
+    if(!user.horde_config) return await database.aIHordeConfig.create({
+        data: {
+            ...config,
+            user: {
+                connect: {
+                    id: userId,
+                },
+            },
+        },
+    });
+    let horde_config = await database.aIHordeConfig.upsert({
+        where: {
+            id: user.horde_config.id,
+        },
+        update: config,
+        create: {
+            ...config,
+            user: {
+                connect: {
+                    id: userId,
+                },
+            },
+        },
+    });
+    // let's update the user
+    return horde_config;
 }
 
 export async function getUser(id: string, database: PrismaClient) {

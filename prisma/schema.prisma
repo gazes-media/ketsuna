@@ -18,24 +18,24 @@ model Users {
 }
 
 model AIHordeConfig {
-  id                 String  @id @unique @default(cuid())
-  user               Users?  @relation("UserHordeConfig", fields: [userId], references: [id])
-  userId             String  @unique
-  nsfw               Boolean @default(false)
+  id                 String   @id @unique @default(cuid())
+  user               Users?   @relation("UserHordeConfig", fields: [userId], references: [id])
+  userId             String   @unique
+  nsfw               Boolean? @default(false)
   sharedKey          String?
-  definedPrompt      String  @default("{p}###{ng}")
+  definedPrompt      String?  @default("{p}###{ng}")
   loras              Loras[]
-  cfg_scale          Int     @default(7)
-  gen_numbers        Int     @default(4)
-  height             Int     @default(512)
-  width              Int     @default(512)
-  steps              Int     @default(25)
-  model              String  @default("Anything Diffusion")
-  facefixer_strength Float   @default(1)
-  sampler            String  @default("k_euler")
-  clip_skip          Int     @default(2)
-  upscaller          String  @default("RealESRGAN_x4plus")
-  preprompt_loras    Boolean @default(false)
+  cfg_scale          Int?     @default(7)
+  gen_numbers        Int?     @default(4)
+  height             Int?     @default(512)
+  width              Int?     @default(512)
+  steps              Int?     @default(25)
+  model              String?  @default("Anything Diffusion")
+  facefixer_strength Float?   @default(1)
+  sampler            String?  @default("k_euler")
+  clip_skip          Int?     @default(2)
+  upscaller          String?  @default("RealESRGAN_x4plus")
+  preprompt_loras    Boolean? @default(false)
   postProcessor      String?
 }
 
