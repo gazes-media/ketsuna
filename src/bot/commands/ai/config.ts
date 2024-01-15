@@ -28,6 +28,7 @@ export default async function Config(
             let loras4 = options.getString("loras_4")
             let loras5 = options.getString("loras_5")
             let definedPrompt = options.getString("preprompt")
+            let negative_prompt = options.getString("negative_prompt")
             let preprompt_loras = options.getBoolean("loras_preprompt")
             let cfg_scale = options.getNumber("cfg_scale")
             let sampler = options.getString("sampler")
@@ -47,8 +48,21 @@ export default async function Config(
             let user = await getUser(interaction.user.id, command.client.database);
             // let's create a User if it doesn't exist
             // we will create a new Horde config for the user
-            if(user.horde_config === null && definedPrompt === null) {
-                definedPrompt = "{p}###{ng}deformed, blurry,[bad anatomy], disfigured, poorly drawn face, [[[mutation]]], mutated, [[[extra arms]]], extra legs, ugly, horror, out of focus, depth of field, focal blur, bad quality, double body, [[double torso]], equine, bovine,[[feral]], [duo], [[canine]], creepy fingers, extra fingers, bad breasts, bad butt, split breasts, split butt, Blurry textures, blurry everything, creepy arms, bad arm anatomy, bad leg anatomy, bad finger anatomy, poor connection of the body with clothing and other things, poor quality character, poor quality body, Bad clothes quality, bad underwear, bad ears, poor eyes quality, poor quality of the background, poor facial quality, text."
+
+            let finalPrompt = "{p}###{ng}"
+            if(user.horde_config === null && definedPrompt === null && negative_prompt === null) {
+                definedPrompt = "{p}###{ng}"
+            }else{
+                if(definedPrompt !== null && negative_prompt !== null) {
+                    definedPrompt = finalPrompt.replace("{ng}", negative_prompt + "{ng}").replace("{p}", definedPrompt + "{p}")
+                }else if(definedPrompt === null && negative_prompt !== null) {
+                    finalPrompt = user.horde_config.definedPrompt
+                    finalPrompt = finalPrompt.replace("{ng}", negative_prompt + "{ng}")
+                    definedPrompt = finalPrompt
+                }else if(definedPrompt !== null && negative_prompt === null) {
+                    finalPrompt = user.horde_config.definedPrompt
+                    definedPrompt = finalPrompt.replace("{p}", definedPrompt + "{p}")
+                }
             }
             
             // we will now create an Object with non null values

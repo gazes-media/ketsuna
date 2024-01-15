@@ -69,7 +69,7 @@ export default async function AdvancedImagine(
       })[0].name;
     let negative_prompt =
       options.getString("negative_prompt") ||
-      "deformed, blurry,[bad anatomy], disfigured, poorly drawn face, [[[mutation]]], mutated, [[[extra arms]]], extra legs, ugly, horror, out of focus, depth of field, focal blur, bad quality, double body, [[double torso]], equine, bovine,[[feral]], [duo], [[canine]], creepy fingers, extra fingers, bad breasts, bad butt, split breasts, split butt, Blurry textures, blurry everything, creepy arms, bad arm anatomy, bad leg anatomy, bad finger anatomy, poor connection of the body with clothing and other things, poor quality character, poor quality body, Bad clothes quality, bad underwear, bad ears, poor eyes quality, poor quality of the background, poor facial quality, text.";
+      "";
     let nsfw = options.getBoolean("nsfw") || false;
     let step = options.getNumber("step") || 25;
     let clip_skip = options.getNumber("clip_skip") || 3;

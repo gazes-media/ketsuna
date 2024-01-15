@@ -445,6 +445,13 @@ const commandData = new SlashCommandBuilder()
           .setMinValue(64)
           .setMaxValue(3072),
       )
+      .addStringOption((option) =>
+          option.setName("negative_prompt").setDescription("Describe what the image should not be").setRequired(false).setNameLocalizations({
+            fr: "prompt_negatif",
+          }).setDescriptionLocalizations({
+            fr: "Decrire ce que l'image ne doit pas être",
+          }),
+      )
       .addBooleanOption((option) =>
         option
           .setName("remove_loras")

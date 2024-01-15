@@ -107,7 +107,7 @@ export default async function Imagine(
         .get(interaction.commandName)
         ?.set(interaction.user.id, true)
 
-      const predefinedPrompt = config?.definedPrompt || '{p}###{ng}deformed, blurry,[bad anatomy], disfigured, poorly drawn face, [[[mutation]]], mutated, [[[extra arms]]], extra legs, ugly, horror, out of focus, depth of field, focal blur, bad quality, double body, [[double torso]], equine, bovine,[[feral]], [duo], [[canine]], creepy fingers, extra fingers, bad breasts, bad butt, split breasts, split butt, Blurry textures, blurry everything, creepy arms, bad arm anatomy, bad leg anatomy, bad finger anatomy, poor connection of the body with clothing and other things, poor quality character, poor quality body, Bad clothes quality, bad underwear, bad ears, poor eyes quality, poor quality of the background, poor facial quality, text.'
+      const predefinedPrompt = config?.definedPrompt || '{p}###{ng}'
       const prompt: ImageGenerationInput = {
         prompt: predefinedPrompt.replace('{p}', image).replace('{ng}', negative_prompt),
         params: {
