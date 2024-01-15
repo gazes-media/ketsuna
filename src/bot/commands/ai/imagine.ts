@@ -1,142 +1,159 @@
-import CommandsBase from "../baseCommands";
+import type CommandsBase from '../baseCommands'
 import {
-  APIActionRowComponent,
-  APIButtonComponent,
-  AttachmentPayload,
+  type APIActionRowComponent,
+  type APIButtonComponent,
+  type AttachmentPayload,
   ButtonBuilder,
   ButtonStyle,
   Colors,
-  CommandInteraction,
+  type CommandInteraction,
   CommandInteractionOptionResolver,
   EmbedBuilder,
-  MessageEditOptions,
+  type MessageEditOptions,
   MessageFlags,
   TextChannel,
-  codeBlock,
-} from "discord.js";
+  codeBlock
+} from 'discord.js'
 import {
-  ImageGenerationInput,
+  type ImageGenerationInput,
   ModelGenerationInputPostProcessingTypes,
-  ModelGenerationInputStableSamplers,
-} from "@zeldafan0225/ai_horde";
-import { bt } from "../../../main";
-import { getUser } from "../../functions/database";
+  ModelGenerationInputStableSamplers
+} from '@zeldafan0225/ai_horde'
+import { bt } from '../../../main'
+import { getUser } from '../../functions/database'
 export default async function Imagine(
   command: CommandsBase,
-  interaction: CommandInteraction,
+  interaction: CommandInteraction
 ) {
-  let userDatabase = await getUser(interaction.user.id, command.client.database);
-  let defaultToken = "0000000000";
+  const userDatabase = await getUser(interaction.user.id, command.client.database)
+  let defaultToken = '0000000000'
   if (userDatabase && userDatabase.horde_token) {
-    defaultToken = command.client.decryptString(userDatabase.horde_token);
+    defaultToken = command.client.decryptString(userDatabase.horde_token)
   }
-  let timeout = command.client.timeouts.get(interaction.commandName);
+  const timeout = command.client.timeouts.get(interaction.commandName)
   if (!timeout) {
     interaction.reply({
       content: bt.__({
-        phrase: "An error occured, please try again later",
-        locale: interaction.locale,
+        phrase: 'An error occured, please try again later',
+        locale: interaction.locale
       }),
-      flags: MessageFlags.Ephemeral,
-    });
-    return;
+      flags: MessageFlags.Ephemeral
+    })
+    return
   }
   if (timeout.has(interaction.user.id)) {
     interaction.reply({
       content: bt.__({
         phrase:
-          "You must wait the current generation before using this command again",
-        locale: interaction.locale,
+          'You must wait the current generation before using this command again',
+        locale: interaction.locale
       }),
-      flags: MessageFlags.Ephemeral,
-    });
-    return;
+      flags: MessageFlags.Ephemeral
+    })
+    return
   }
-  let ai = command.client.aiHorde;
-  let config = userDatabase.horde_config ? userDatabase.horde_config : null;
+  const ai = command.client.aiHorde
+  const config = userDatabase.horde_config ? userDatabase.horde_config : null
 
   // get the option value
-  let message = await interaction.deferReply();
-  let modelMoreDemanded = await ai.getModels();
-  let options = interaction.options;
+  const msgToSend = await interaction.reply({
+    "content": bt.__({
+      phrase: 'Generation started..',
+      locale: interaction.locale
+    }),
+  });
+  const modelMoreDemanded = await ai.getModels()
+  const options = interaction.options
   if (options instanceof CommandInteractionOptionResolver) {
-    let image = options.getString("prompt") || "";
+    const image = options.getString('prompt') || ''
     // the model the more demanded is the one with the most count of Workers
-    let model =
-      options.getString("model") || config?.model ||
+    const model =
+      options.getString('model') || config?.model ||
       modelMoreDemanded.sort((a, b) => {
-        return b.count - a.count;
-      })[0].name;
-    let negative_prompt =
-      options.getString("negative_prompt") ||
-      "";
-    let lorasConfig = config ? config.loras : null;
+        return b.count - a.count
+      })[0].name
+    const negative_prompt =
+      options.getString('negative_prompt') ||
+      ''
     // first let's check if userDatabase is null, if it is, we set the default value to false
-    let nsfw = options.getBoolean("nsfw") || config?.nsfw || false;
-    let loras = options.getString("loras") || lorasConfig?.length > 0 ? config.loras[0].loras_id : null || null;
-    let loras2 = options.getString("loras_2") || lorasConfig?.length > 1 ? config.loras[1].loras_id : null || null;
-    let loras3 = options.getString("loras_3") || lorasConfig?.length > 2 ? config.loras[2].loras_id : null || null;
-    let loras4 = options.getString("loras_4") || lorasConfig?.length > 3 ? config.loras[3].loras_id : null || null;
-    let loras5 = options.getString("loras_5") || lorasConfig?.length > 4 ? config.loras[4].loras_id : null || null;
-    let preprompt = options.getBoolean("preprompt") || config?.preprompt_loras || false;
+    const nsfw = options.getBoolean('nsfw') || config?.nsfw || false
+    let lorasListFromDatabase = Array(5).fill(null).map((_, index) => {
+      return config?.loras[index]?.loras_id || null
+    })
+    // we now need to check for each Loras if it's set or not, if it's not, we set it to null and if it is, we set it to the value
+    const loras = options.getString('loras') ||
+      lorasListFromDatabase[0] || null
+    const loras2 = options.getString('loras_2') ||
+      lorasListFromDatabase[1] ||
+      null
+    const loras3 = options.getString('loras_3') ||
+      lorasListFromDatabase[2] ||
+      null
+    const loras4 = options.getString('loras_4') ||
+      lorasListFromDatabase[3] ||
+      null
+    const loras5 = options.getString('loras_5') ||
+      lorasListFromDatabase[4] ||
+      null
+    const preprompt = options.getBoolean('preprompt') || config?.preprompt_loras || false
     if (image) {
-      let textChannel =
-        interaction.channel instanceof TextChannel ? interaction.channel : null;
-      let nsfwchannel = true;
+      const textChannel =
+        interaction.channel instanceof TextChannel ? interaction.channel : null
+      let nsfwchannel = true
       if (textChannel) {
-        nsfwchannel = textChannel.nsfw;
+        nsfwchannel = textChannel.nsfw
       }
       command.client.timeouts
         .get(interaction.commandName)
-        ?.set(interaction.user.id, true);
+        ?.set(interaction.user.id, true)
 
-      let predefinedPrompt = config?.definedPrompt || "{p}###{ng}deformed, blurry,[bad anatomy], disfigured, poorly drawn face, [[[mutation]]], mutated, [[[extra arms]]], extra legs, ugly, horror, out of focus, depth of field, focal blur, bad quality, double body, [[double torso]], equine, bovine,[[feral]], [duo], [[canine]], creepy fingers, extra fingers, bad breasts, bad butt, split breasts, split butt, Blurry textures, blurry everything, creepy arms, bad arm anatomy, bad leg anatomy, bad finger anatomy, poor connection of the body with clothing and other things, poor quality character, poor quality body, Bad clothes quality, bad underwear, bad ears, poor eyes quality, poor quality of the background, poor facial quality, text.";
-      let prompt: ImageGenerationInput = {
-        prompt: predefinedPrompt.replace("{p}", image).replace("{ng}", negative_prompt),
+      const predefinedPrompt = config?.definedPrompt || '{p}###{ng}deformed, blurry,[bad anatomy], disfigured, poorly drawn face, [[[mutation]]], mutated, [[[extra arms]]], extra legs, ugly, horror, out of focus, depth of field, focal blur, bad quality, double body, [[double torso]], equine, bovine,[[feral]], [duo], [[canine]], creepy fingers, extra fingers, bad breasts, bad butt, split breasts, split butt, Blurry textures, blurry everything, creepy arms, bad arm anatomy, bad leg anatomy, bad finger anatomy, poor connection of the body with clothing and other things, poor quality character, poor quality body, Bad clothes quality, bad underwear, bad ears, poor eyes quality, poor quality of the background, poor facial quality, text.'
+      const prompt: ImageGenerationInput = {
+        prompt: predefinedPrompt.replace('{p}', image).replace('{ng}', negative_prompt),
         params: {
-          sampler_name: config?.sampler as ImageGenerationInput["params"]["sampler_name"] || ModelGenerationInputStableSamplers.k_euler,
+          sampler_name: config?.sampler as ImageGenerationInput['params']['sampler_name'] || ModelGenerationInputStableSamplers.k_euler,
           cfg_scale: config?.cfg_scale || 7,
           height: config?.height || 512,
           width: config?.width || 512,
           post_processing: [
-            config?.upscaller as ImageGenerationInput["params"]["post_processing"][0] || ModelGenerationInputPostProcessingTypes.RealESRGAN_x4plus,
+            config?.upscaller as ImageGenerationInput['params']['post_processing'][0] || ModelGenerationInputPostProcessingTypes.RealESRGAN_x4plus
           ],
           clip_skip: config?.clip_skip || 3,
           facefixer_strength: 1,
           steps: config?.steps || 25,
-          n: config?.gen_numbers || 4,
+          n: config?.gen_numbers || 4
         },
-        censor_nsfw: nsfwchannel ? (nsfw ? false : true) : true,
+        censor_nsfw: nsfwchannel ? (!nsfw) : true,
         models: [model],
-        nsfw: nsfwchannel ? (nsfw ? true : false) : false,
-        shared: true,
-      };
+        nsfw: nsfwchannel ? (!!nsfw) : false,
+        shared: true
+      }
 
-      let lorasList = [loras, loras2, loras3, loras4, loras5].filter((loras) => {
-        return loras !== null;
-      });
+      const lorasList = [loras, loras2, loras3, loras4, loras5].filter((loras) => {
+        return loras !== null
+      })
       if (lorasList.length > 0) {
         // if preprompt is selected, we get a random model, and a random image from this model to use as prompt
         if (preprompt) {
           try {
-            let lorasDatas = await command.client.getLorasModel(lorasList[0]);
-            let randomModelVersion =
+            const lorasDatas = await command.client.getLorasModel(lorasList[0])
+            const randomModelVersion =
               lorasDatas.modelVersions[
               Math.floor(Math.random() * lorasDatas.modelVersions.length)
-              ];
-            let randomMetaImage =
+              ]
+            const randomMetaImage =
               randomModelVersion.images[
                 Math.floor(Math.random() * randomModelVersion.images.length)
-              ].meta;
-            prompt.params.steps = randomMetaImage.steps;
-            prompt.params.cfg_scale = randomMetaImage.cfgScale;
+              ].meta
+            prompt.params.steps = randomMetaImage.steps
+            prompt.params.cfg_scale = randomMetaImage.cfgScale
             prompt.prompt =
               randomMetaImage.prompt +
               image.substring(0, 1024) +
-              "### " +
-              randomMetaImage.negativePrompt;
+              '### ' +
+              randomMetaImage.negativePrompt
           } catch (e) {
-            console.log("Loras was not found");
+            console.log('Loras was not found')
           }
         }
 
@@ -145,42 +162,42 @@ export default async function Imagine(
             name: loras,
             model: index,
             clip: index + 1,
-            inject_trigger: "any",
-          };
-        });
+            inject_trigger: 'any'
+          }
+        })
       }
-      if (model.toLowerCase().includes("sdxl")) {
-        prompt.params.hires_fix = false;
+      if (model.toLowerCase().includes('sdxl')) {
+        prompt.params.hires_fix = false
       } else {
-        prompt.params.hires_fix = true;
+        prompt.params.hires_fix = true
       }
       ai.postAsyncImageGenerate(prompt, {
-        token: defaultToken,
+        token: defaultToken
       })
         .then(async (result) => {
-          let id = result.id as string;
-          let finished = 0;
-          let collector = await message.createMessageComponentCollector({
+          const id = result.id
+          let finished = 0
+          const collector = await msgToSend.createMessageComponentCollector({
             filter: (componentInteraction) => {
               return (
-                componentInteraction.customId === "cancel" &&
+                componentInteraction.customId === 'cancel' &&
                 componentInteraction.user.id === interaction.user.id
-              );
+              )
             },
-            max: 1,
-          });
-          let interval: NodeJS.Timeout = setInterval(() => {
+            max: 1
+          })
+          const interval: NodeJS.Timeout = setInterval(() => {
             if (id) {
               ai.getImageGenerationCheck(id, {
-                force: true,
+                force: true
               }).then((stat) => {
                 if (stat.is_possible) {
                   if (stat.done) {
-                    clearInterval(interval);
-                    collector.stop("done");
+                    clearInterval(interval)
+                    collector.stop('done')
                     command.client.timeouts
                       .get(interaction.commandName)
-                      ?.delete(interaction.user.id);
+                      ?.delete(interaction.user.id)
                     ai.getImageGenerationStatus(id).then((status) => {
                       console.log({
                         generations: status.generations.map((generation) => {
@@ -188,121 +205,121 @@ export default async function Imagine(
                             url: generation.img,
                             workerName: generation.worker_name,
                             workerId: generation.worker_id,
-                            model: generation.model,
+                            model: generation.model
                           }
                         }),
                         prompt: JSON.stringify(prompt),
-                        guildName: interaction.guild?.name || "DM",
-                      });
-                      let generations = status.generations;
+                        guildName: interaction.guild?.name || 'DM'
+                      })
+                      const generations = status.generations
                       if (generations && generations.length > 0) {
-                        interaction.editReply({
-                          content: "",
+                        msgToSend.edit({
+                          content: '',
                           files: generations.map((generation, i) => {
                             return {
-                              attachment: generation.img as string,
-                              name: "image" + i + ".webp",
-                            };
+                              attachment: generation.img,
+                              name: 'image' + i + '.webp'
+                            }
                           }),
-                          components: [],
-                        });
+                          components: []
+                        })
                       }
-                    });
+                    })
                   } else {
-                    let components: APIActionRowComponent<APIButtonComponent>[] =
+                    const components: Array<APIActionRowComponent<APIButtonComponent>> =
                       [
                         {
                           type: 1,
                           components: [
                             new ButtonBuilder()
-                              .setCustomId("cancel")
+                              .setCustomId('cancel')
                               .setLabel(
                                 bt.__({
-                                  phrase: "Cancel",
-                                  locale: interaction.locale,
-                                }),
+                                  phrase: 'Cancel',
+                                  locale: interaction.locale
+                                })
                               )
                               .setStyle(ButtonStyle.Danger)
-                              .setEmoji("🚫")
+                              .setEmoji('🚫')
                               .setDisabled(false)
-                              .toJSON(),
-                          ],
-                        },
-                      ];
+                              .toJSON()
+                          ]
+                        }
+                      ]
                     // attachment
-                    let wait_time = stat.wait_time || 1;
-                    let files: AttachmentPayload[] = [];
+                    const wait_time = stat.wait_time || 1
+                    const files: AttachmentPayload[] = []
                     let processed =
                       bt.__({
-                        phrase: "Generation started..",
-                        locale: interaction.locale,
-                      }) + "\n";
+                        phrase: 'Generation started..',
+                        locale: interaction.locale
+                      }) + '\n'
                     if (stat.queue_position && stat.queue_position > 0) {
                       processed +=
                         bt.__(
                           {
-                            phrase: "(Position in the queue: %s -",
-                            locale: interaction.locale,
+                            phrase: '(Position in the queue: %s -',
+                            locale: interaction.locale
                           },
-                          String(stat.queue_position),
-                        ) + "\n";
+                          String(stat.queue_position)
+                        ) + '\n'
                     }
                     if (stat.waiting && stat.waiting > 0) {
                       processed +=
                         bt.__(
                           {
-                            phrase: "Waiting : %s",
-                            locale: interaction.locale,
+                            phrase: 'Waiting : %s',
+                            locale: interaction.locale
                           },
-                          String(stat.waiting),
-                        ) + "\n";
+                          String(stat.waiting)
+                        ) + '\n'
                     }
                     if (stat.finished && stat.finished > 0) {
                       processed +=
                         bt.__(
                           {
-                            phrase: "Finished : %s",
-                            locale: interaction.locale,
+                            phrase: 'Finished : %s',
+                            locale: interaction.locale
                           },
-                          String(stat.finished),
-                        ) + "\n";
+                          String(stat.finished)
+                        ) + '\n'
                     }
                     if (stat.processing && stat.processing > 0) {
                       processed +=
                         bt.__(
                           {
-                            phrase: "Processing : %s",
-                            locale: interaction.locale,
+                            phrase: 'Processing : %s',
+                            locale: interaction.locale
                           },
-                          String(stat.processing),
-                        ) + "\n";
+                          String(stat.processing)
+                        ) + '\n'
                       processed += bt.__(
                         {
-                          phrase: "(Estimated waiting time: <t:%s:R>)",
-                          locale: interaction.locale,
+                          phrase: '(Estimated waiting time: <t:%s:R>)',
+                          locale: interaction.locale
                         },
                         String(
                           parseInt(
-                            ((Date.now() + wait_time * 1000) / 1000).toString(),
-                          ),
-                        ),
-                      ) + "\n";
+                            ((Date.now() + wait_time * 1000) / 1000).toString()
+                          )
+                        )
+                      ) + '\n'
                     }
                     if (stat.kudos && stat.kudos > 0) {
                       processed += bt.__(
                         {
-                          phrase: "Kudos used: %s",
-                          locale: interaction.locale,
+                          phrase: 'Kudos used: %s',
+                          locale: interaction.locale
                         },
-                        String(stat.kudos),
-                      );
+                        String(stat.kudos)
+                      )
                     }
-                    let message: MessageEditOptions = {
+                    const message: MessageEditOptions = {
                       content: processed,
-                      components: components,
-                    };
+                      components
+                    }
                     if (stat.finished && stat.finished > finished) {
-                      finished = stat.finished;
+                      finished = stat.finished
                       ai.getImageGenerationStatus(id).then((status) => {
                         if (
                           status.generations &&
@@ -310,130 +327,130 @@ export default async function Imagine(
                         ) {
                           status.generations.forEach((generation, i) => {
                             files.push({
-                              attachment: generation.img as string,
-                              name: "image" + i + ".webp",
-                            });
-                          });
+                              attachment: generation.img,
+                              name: 'image' + i + '.webp'
+                            })
+                          })
                         }
                         if (files.length > 0) {
-                          message.files = files;
+                          message.files = files
                         }
-                        interaction.editReply(message).catch((e) => {
-                          clearInterval(interval);
-                          collector.stop("cancel");
+                        msgToSend.edit(message).catch((e) => {
+                          clearInterval(interval)
+                          collector.stop('cancel')
                           command.client.timeouts
                             .get(interaction.commandName)
-                            ?.delete(interaction.user.id);
+                            ?.delete(interaction.user.id)
                           command.client.aiHorde.deleteImageGenerationRequest(
-                            id,
-                          );
-                        });
-                      });
+                            id
+                          )
+                        })
+                      })
                     } else {
-                      interaction.editReply(message).catch((e) => {
-                        clearInterval(interval);
-                        collector.stop("cancel");
+                      msgToSend.edit(message).catch((e) => {
+                        clearInterval(interval)
+                        collector.stop('cancel')
                         command.client.timeouts
                           .get(interaction.commandName)
-                          ?.delete(interaction.user.id);
-                        command.client.aiHorde.deleteImageGenerationRequest(id);
-                      });
+                          ?.delete(interaction.user.id)
+                        command.client.aiHorde.deleteImageGenerationRequest(id)
+                      })
                     }
                   }
                 } else {
-                  clearInterval(interval);
+                  clearInterval(interval)
                   command.client.timeouts
                     .get(interaction.commandName)
-                    ?.delete(interaction.user.id);
+                    ?.delete(interaction.user.id)
                   interaction
                     .editReply({
                       content: bt.__({
-                        phrase: "Request impossible, model not available",
-                        locale: interaction.locale,
+                        phrase: 'Request impossible, model not available',
+                        locale: interaction.locale
                       }),
-                      components: [],
+                      components: []
                     })
                     .catch((e) => {
-                      clearInterval(interval);
-                      collector.stop("cancel");
+                      clearInterval(interval)
+                      collector.stop('cancel')
                       command.client.timeouts
                         .get(interaction.commandName)
-                        ?.delete(interaction.user.id);
-                      command.client.aiHorde.deleteImageGenerationRequest(id);
-                    });
+                        ?.delete(interaction.user.id)
+                      command.client.aiHorde.deleteImageGenerationRequest(id)
+                    })
                 }
-              });
+              })
             }
-          }, 5000);
+          }, 5000)
 
-          collector.on("collect", (componentInteraction) => {
-            collector.stop("cancel");
-            clearInterval(interval);
+          collector.on('collect', (componentInteraction) => {
+            collector.stop('cancel')
+            clearInterval(interval)
             command.client.timeouts
               .get(interaction.commandName)
-              ?.delete(interaction.user.id);
+              ?.delete(interaction.user.id)
             componentInteraction.update({
               content: bt.__({
-                phrase: "Request canceled",
-                locale: interaction.locale,
+                phrase: 'Request canceled',
+                locale: interaction.locale
               }),
-              components: [],
-            });
-            command.client.aiHorde.deleteImageGenerationRequest(id);
-          });
+              components: []
+            })
+            command.client.aiHorde.deleteImageGenerationRequest(id)
+          })
         })
         .catch((err) => {
-          if (command.client.application.id === "1100859965616427068") {
-            command.client.users.fetch("243117191774470146").then((user) => {
+          if (command.client.application.id === '1100859965616427068') {
+            command.client.users.fetch('243117191774470146').then((user) => {
               user.send({
                 embeds: [
                   new EmbedBuilder()
                     .setTimestamp(new Date())
-                    .setDescription(codeBlock("json", JSON.stringify(err)))
+                    .setDescription(codeBlock('json', JSON.stringify(err)))
                     .setTitle("Erreur lors de la génération d'une image")
                     .setColor(Colors.Red)
                     .addFields([
                       {
-                        name: "Utilisateur",
-                        value: `${interaction.user.tag} (${interaction.user.id})`,
+                        name: 'Utilisateur',
+                        value: `${interaction.user.tag} (${interaction.user.id})`
                       },
                       {
-                        name: "Commande",
-                        value: `${interaction.commandName}`,
+                        name: 'Commande',
+                        value: `${interaction.commandName}`
                       },
                       {
-                        name: "Options",
-                        value: codeBlock("json", JSON.stringify(options)),
-                      },
+                        name: 'Options',
+                        value: codeBlock('json', JSON.stringify(options))
+                      }
                     ])
-                    .toJSON(),
-                ],
-              });
-            });
+                    .toJSON()
+                ]
+              })
+            })
           }
           command.client.timeouts
             .get(interaction.commandName)
-            ?.delete(interaction.user.id);
+            ?.delete(interaction.user.id)
           if (interaction.deferred) {
-            interaction.editReply({
+            msgToSend.edit({
               content: bt.__({
                 phrase:
-                  "An error occured, content too long or too complex, or request too unethical to be processed.",
-                locale: interaction.locale,
+                  'An error occured, content too long or too complex, or request too unethical to be processed.',
+                locale: interaction.locale
               }),
-              components: [],
-            });
+              components: []
+            })
           } else {
-            interaction.editReply({
+            msgToSend.edit({
               content: bt.__({
                 phrase:
-                  "An error occured, content too long or too complex, or request too unethical to be processed.",
-                locale: interaction.locale,
+                  'An error occured, content too long or too complex, or request too unethical to be processed.',
+                locale: interaction.locale
               }),
-              components: [],
-            });
+              components: []
+            })
           }
-        });
+        })
     }
   }
 }

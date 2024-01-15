@@ -1,5 +1,4 @@
 import {
-  ApplicationCommandOption,
   ApplicationCommandOptionType,
   CommandInteraction,
   EmbedBuilder,
@@ -37,7 +36,7 @@ export default async function Help(
                 return localization[0] === interaction.locale;
               });
               if (localizedDesc) desc = localizedDesc[1];
-            } catch (_) {}
+            } catch (_) { }
             return [
               `</${AiCommand.name} ${option.name} ${subOption.name}:${AiCommand.id}> - ${desc}`,
             ];
@@ -52,7 +51,7 @@ export default async function Help(
             return localization[0] === interaction.locale;
           });
           if (localizedDesc) desc = localizedDesc[1];
-        } catch (_) {}
+        } catch (_) { }
         return [
           `</${AiCommand.name} ${option.name}:${AiCommand.id}> - ${desc}`,
         ];
