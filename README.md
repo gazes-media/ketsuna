@@ -32,7 +32,7 @@ The Front-end is built with [React](https://reactjs.org/) and [Next.js](https://
     DISCORD_STATUS_NAME=The best Bot ever
     DISCORD_STATUS_STATE=The Best AI Bot
 ```
-
+test
 4. Run the database migrations with `pnpm migrate` (this will create the database tables)
 5. Build the project with `pnpm build`
 6. Run the project with `pnpm start` or `node dist/main.js` or with pm2 `pm2 start npm --name "your-app-name" -- start`
