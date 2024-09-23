@@ -1,0 +1,1 @@
+"use strict";function _export_star(e,t){return Object.keys(e).forEach(function(r){"default"===r||Object.prototype.hasOwnProperty.call(t,r)||Object.defineProperty(t,r,{enumerable:!0,get:function(){return e[r]}})}),e}Object.defineProperty(exports,"__esModule",{value:!0}),_export_star(require("./commands/ai"),exports),_export_star(require("./commands/deleteMessage"),exports);
