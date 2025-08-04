@@ -21,6 +21,7 @@ import Give from "./ai/give";
 import { bt } from "../../main";
 import Config from "./ai/config";
 
+
 const commandData = new SlashCommandBuilder()
   .setName("ia")
   .setDescription("Commandes IA")
@@ -740,7 +741,7 @@ export class IaCommand extends CommandsBase {
     super(client, commandData);
   }
 
-  async run(interaction: CommandInteraction) {
+ async run(interaction: CommandInteraction) {
     let options = interaction.options;
     if (options instanceof CommandInteractionOptionResolver) {
       let subcommand = options.getSubcommandGroup() ?? options.getSubcommand();
@@ -768,6 +769,7 @@ export class IaCommand extends CommandsBase {
           break;
         case "give":
           await Give(this, interaction);
+          break;
         case "interogate":
           await Interogate(this, interaction);
           break;
